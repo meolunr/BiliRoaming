@@ -1,4 +1,4 @@
-package me.iacn.biliroaming.hooker;
+package me.iacn.biliroaming.hook;
 
 import android.util.Log;
 
@@ -42,7 +42,7 @@ public class BangumiPlayUrlHook extends BaseHook {
 
                         if (urlString.startsWith("https://api.bilibili.com/pgc/player/api/playurl")) {
                             String queryString = urlString.substring(urlString.indexOf("?") + 1);
-                            if (queryString.contains("cid")) {
+                            if (queryString.contains("ep_id=")) {
                                 InputStream inputStream = (InputStream) param.getResult();
                                 String encoding = connection.getContentEncoding();
                                 String content = StreamUtils.getContent(inputStream, encoding);

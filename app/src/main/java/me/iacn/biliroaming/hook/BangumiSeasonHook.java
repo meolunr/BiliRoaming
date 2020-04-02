@@ -1,4 +1,4 @@
-package me.iacn.biliroaming.hooker;
+package me.iacn.biliroaming.hook;
 
 import android.util.ArrayMap;
 import android.util.Log;
@@ -6,7 +6,6 @@ import android.util.Log;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import de.robv.android.xposed.XC_MethodHook;
@@ -16,7 +15,6 @@ import me.iacn.biliroaming.XposedInit;
 import me.iacn.biliroaming.network.BiliRoamingApi;
 
 import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
-import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getBooleanField;
 import static de.robv.android.xposed.XposedHelpers.getIntField;
@@ -88,7 +86,10 @@ public class BangumiSeasonHook extends BaseHook {
 
                 Object result = getObjectField(body, "result");
                 // Filter normal bangumi and other responses
-                if (isBangumiWithWatchPermission(getIntField(body, "code"), result)) return;
+                if (isBangumiWithWatchPermission(getIntField(body, "code"), result)) {
+                    lastSeasonInfo.clear();
+                    return;
+                }
 
                 boolean useCache = result != null;
                 String content;
@@ -126,16 +127,10 @@ public class BangumiSeasonHook extends BaseHook {
                         setObjectField(body, "result", newResult);
                     }
                 }
+
+                lastSeasonInfo.clear();
             }
         });
-
-        findAndHookMethod("com.bilibili.bangumi.logic.page.detail.BangumiDetailViewModel$d", mClassLoader,
-                "call", Object.class, new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        lastSeasonInfo.clear();
-                    }
-                });
     }
 
     private boolean isBangumiWithWatchPermission(int code, Object result) {
@@ -144,11 +139,9 @@ public class BangumiSeasonHook extends BaseHook {
         if (result != null) {
             Class<?> bangumiSeasonClass = BiliBiliPackage.getInstance().bangumiUniformSeason();
             if (bangumiSeasonClass.isInstance(result)) {
-                List episodes = (List) getObjectField(result, "episodes");
                 Object rights = getObjectField(result, "rights");
                 boolean areaLimit = getBooleanField(rights, "areaLimit");
-
-                return !areaLimit && episodes.size() != 0;
+                return !areaLimit;
             }
         }
         return code != -404;
@@ -157,23 +150,21 @@ public class BangumiSeasonHook extends BaseHook {
     private String getSeasonInfoFromProxyServer(boolean useCache) throws IOException {
         Log.d(TAG, "Limited Bangumi: seasonInfo = " + lastSeasonInfo);
 
-        String content = null;
+        String id = null;
         String accessKey = (String) lastSeasonInfo.get("access_key");
 
         switch ((int) lastSeasonInfo.get("type")) {
             case TYPE_SEASON_ID:
-                String seasonId = (String) lastSeasonInfo.get("season_id");
-                if (XposedInit.sPrefs.getBoolean("use_biliplus", false))
-                    content = BiliRoamingApi.getSeason_BP(seasonId, accessKey, useCache);
-                else
-                    content = BiliRoamingApi.getSeason(seasonId, accessKey, useCache);
+                id = (String) lastSeasonInfo.get("season_id");
                 break;
             case TYPE_EPISODE_ID:
-                String episodeId = (String) lastSeasonInfo.get("episode_id");
-                content = BiliRoamingApi.getEpisode(episodeId, accessKey, useCache);
+                id = "ep" + lastSeasonInfo.get("episode_id");
                 break;
         }
 
-        return content;
+        if (XposedInit.sPrefs.getBoolean("use_biliplus", false))
+            return BiliRoamingApi.getSeason_BP(id, accessKey, useCache);
+        else
+            return BiliRoamingApi.getSeason(id, accessKey, useCache);
     }
 }
