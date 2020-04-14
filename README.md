@@ -1,8 +1,11 @@
+# 咕咕咕
+无限咕咕咕中，请移步 https://github.com/yujincheng08/BiliRoaming 获取更新的版本
+
 # BiliRoaming
 An Xposed module to unlock BiliBili bangumi watching area limit.
 
 # BiliPlus API Version
-* use BiliPlus API instead of iacn.me (is it down?)
+* use BiliPlus API instead of iacn.me
 * unlock China Mainland restricted bangumi (as well as eariler supported TW/HK bangumi)
 * don't work under taichi framework because of the signature
 
