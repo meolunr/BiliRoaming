@@ -10,7 +10,11 @@ import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XSharedPreferences
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
-import me.iacn.biliroaming.hook.*
+import me.iacn.biliroaming.hook.BangumiPlayUrlHook
+import me.iacn.biliroaming.hook.BangumiSeasonHook
+import me.iacn.biliroaming.hook.CommentHook
+import me.iacn.biliroaming.hook.CustomThemeHook
+import me.iacn.biliroaming.hook.TeenagersModeHook
 
 /**
  * Created by iAcn on 2019/3/24

@@ -2,7 +2,9 @@ package me.iacn.biliroaming.hook
 
 import android.util.Log
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedHelpers.*
+import de.robv.android.xposed.XposedHelpers.findAndHookMethod
+import de.robv.android.xposed.XposedHelpers.getObjectField
+import de.robv.android.xposed.XposedHelpers.setIntField
 import me.iacn.biliroaming.Constant.TAG
 import me.iacn.biliroaming.XposedInit
 
