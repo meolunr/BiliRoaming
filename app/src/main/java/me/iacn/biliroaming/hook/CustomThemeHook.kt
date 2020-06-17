@@ -34,7 +34,7 @@ import java.util.Locale
 class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
 
     companion object {
-        private const val CUSTOM_THEME_ID = 114514 // ん？
+        private const val CUSTOM_THEME_ID = 114514  // ん？
     }
 
     override fun startHook() {
