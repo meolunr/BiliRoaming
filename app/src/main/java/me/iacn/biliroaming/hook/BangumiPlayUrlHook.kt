@@ -17,7 +17,7 @@ import java.net.HttpURLConnection
  * Created by iAcn on 2019/3/29
  * Email i@iacn.me
  */
-class BangumiPlayUrlHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
+class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!XposedInit.sPrefs.getBoolean("main_func", false)) return
@@ -34,8 +34,7 @@ class BangumiPlayUrlHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
                 val queryString = urlString.substring(urlString.indexOf("?") + 1)
                 if (queryString.contains("ep_id=")) {
                     val inputStream = param.result as InputStream
-                    val encoding = connection.contentEncoding
-                    var content = StreamUtils.getContent(inputStream, encoding)
+                    var content = StreamUtils.getContent(inputStream)
 
                     if (isLimitWatchingArea(content)) {
                         content = BiliRoamingApi.getPlayUrl(queryString)
