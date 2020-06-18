@@ -25,7 +25,6 @@ import me.iacn.biliroaming.Constant.CUSTOM_COLOR_KEY
 import me.iacn.biliroaming.Constant.DEFAULT_CUSTOM_COLOR
 import me.iacn.biliroaming.Constant.TAG
 import me.iacn.biliroaming.XposedInit
-import java.util.Locale
 
 /**
  * Created by iAcn on 2019/7/14
@@ -81,7 +80,7 @@ class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
 
                     val colorDialog = ColorChooseDialog(view.context, getCustomColor())
                     colorDialog.setPositiveButton("确定") { _, _ ->
-                        val color = colorDialog.color
+                        val color = colorDialog.getColor()
 
                         val colors = generateColorArray(color)
                         colorArray.put(CUSTOM_THEME_ID, colors)
@@ -93,8 +92,7 @@ class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
                         setIntField(biliSkin, "mId", newId)
 
                         putCustomColor(color)
-                        Log.d(TAG, "Update new color: mId = $newId" +
-                                ", color = 0x${color.toUInt().toString(16).toUpperCase(Locale.getDefault())}")
+                        Log.d(TAG, "Update new color: mId = $newId, color = ${String.format("0x%06X", 0xFFFFFF and color)}")
 
                         try {
                             XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)

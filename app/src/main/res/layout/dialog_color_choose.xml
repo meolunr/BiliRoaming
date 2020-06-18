@@ -27,10 +27,11 @@
 
         <EditText
             android:id="@+id/et_color"
-            android:layout_width="80dp"
+            android:layout_width="84dp"
             android:layout_height="wrap_content"
             android:digits="0123456789abcdefABCDEF"
             android:gravity="center"
+            android:maxLength="6"
             android:textColor="#323232"
             android:textSize="20sp"
             tools:text="009788" />
@@ -46,7 +47,7 @@
         android:paddingRight="24dp">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="18dp"
             android:layout_height="wrap_content"
             android:text="R"
             android:textColor="#323232"
@@ -64,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:minWidth="27dp"
+            android:minWidth="28dp"
             android:textColor="#323232"
             android:textSize="16sp"
             tools:text="0" />
@@ -80,7 +81,7 @@
         android:paddingRight="24dp">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="18dp"
             android:layout_height="wrap_content"
             android:text="G"
             android:textColor="#323232"
@@ -98,7 +99,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:minWidth="27dp"
+            android:minWidth="28dp"
             android:textColor="#323232"
             android:textSize="16sp"
             tools:text="0" />
@@ -114,7 +115,7 @@
         android:paddingRight="24dp">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="18dp"
             android:layout_height="wrap_content"
             android:text="B"
             android:textColor="#323232"
@@ -132,7 +133,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:minWidth="27dp"
+            android:minWidth="28dp"
             android:textColor="#323232"
             android:textSize="16sp"
             tools:text="233" />
