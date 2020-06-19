@@ -25,7 +25,6 @@ class CommentHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 }
             }
         }
-
         findAndHookMethod("com.bilibili.app.comm.comment2.model.BiliCommentList",
                 mClassLoader, "isShowFloor", floorHook)
         findAndHookMethod("com.bilibili.app.comm.comment2.model.BiliCommentCursorList",

@@ -79,7 +79,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
                 if (code == 0) {
                     val resultJson = contentJson.optJSONObject("result")
-                    val beanClass = BiliBiliPackage.getInstance().bangumiUniformSeason()
+                    val beanClass = biliPackage.bangumiUniformSeason()
                     val newResult = callStaticMethod(biliPackage.fastJson(), biliPackage.fastJsonParse(), resultJson!!.toString(), beanClass)
 
                     if (useCache) {

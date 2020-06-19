@@ -39,9 +39,9 @@ class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
         if (!XposedInit.sPrefs.getBoolean("custom_theme", false)) return
         log("startHook: CustomTheme")
 
-        val instance = BiliBiliPackage.getInstance()
-        val helperClass = instance.themeHelper()
-        val colorArray = getStaticObjectField(helperClass, instance.colorArray()) as SparseArray<IntArray>
+        val biliPackage = BiliBiliPackage.getInstance()
+        val helperClass = biliPackage.themeHelper()
+        val colorArray = getStaticObjectField(helperClass, biliPackage.colorArray()) as SparseArray<IntArray>
 
         val primaryColor = getCustomColor()
         colorArray.put(CUSTOM_THEME_ID, generateColorArray(primaryColor))
@@ -64,7 +64,7 @@ class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
             }
         })
 
-        findAndHookMethod(instance.themeListClickListener(), mClassLoader, "onClick", View::class.java, object : XC_MethodHook() {
+        findAndHookMethod(biliPackage.themeListClickListener(), mClassLoader, "onClick", View::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val view = param.args[0] as View
                 val idName = view.resources.getResourceEntryName(view.id)
@@ -80,8 +80,9 @@ class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
                     val colorDialog = ColorChooseDialog(view.context, getCustomColor())
                     colorDialog.setPositiveButton("确定") { _, _ ->
                         val color = colorDialog.getColor()
-
                         val colors = generateColorArray(color)
+
+                        val colorArray = getStaticObjectField(helperClass, BiliBiliPackage.getInstance().colorArray()) as SparseArray<IntArray>
                         colorArray.put(CUSTOM_THEME_ID, colors)
                         colorArray.put(-1, colors)  // Add a new color id but it won't be saved
 
