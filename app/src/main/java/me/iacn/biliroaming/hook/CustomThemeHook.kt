@@ -5,7 +5,6 @@ import android.app.AndroidAppHelper
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
-import android.util.Log
 import android.util.SparseArray
 import android.view.View
 import de.robv.android.xposed.XC_MethodHook
@@ -23,8 +22,8 @@ import me.iacn.biliroaming.BiliBiliPackage
 import me.iacn.biliroaming.ColorChooseDialog
 import me.iacn.biliroaming.Constant.CUSTOM_COLOR_KEY
 import me.iacn.biliroaming.Constant.DEFAULT_CUSTOM_COLOR
-import me.iacn.biliroaming.Constant.TAG
 import me.iacn.biliroaming.XposedInit
+import me.iacn.biliroaming.log
 
 /**
  * Created by iAcn on 2019/7/14
@@ -38,7 +37,7 @@ class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!XposedInit.sPrefs.getBoolean("custom_theme", false)) return
-        Log.d(TAG, "startHook: CustomTheme")
+        log("startHook: CustomTheme")
 
         val instance = BiliBiliPackage.getInstance()
         val helperClass = instance.themeHelper()
@@ -61,7 +60,7 @@ class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
                 // Under the night mode item
                 mList.add(3, biliSkin)
 
-                Log.d(TAG, "Add a theme item: size = " + mList.size)
+                log("Add a theme item: size = " + mList.size)
             }
         })
 
@@ -76,7 +75,7 @@ class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
                 val mId = getIntField(biliSkin, "mId")
                 // Make colors updated immediately
                 if (mId == CUSTOM_THEME_ID || mId == -1) {
-                    Log.d(TAG, "Custom theme item has been clicked")
+                    log("Custom theme item has been clicked")
 
                     val colorDialog = ColorChooseDialog(view.context, getCustomColor())
                     colorDialog.setPositiveButton("确定") { _, _ ->
@@ -92,7 +91,7 @@ class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
                         setIntField(biliSkin, "mId", newId)
 
                         putCustomColor(color)
-                        Log.d(TAG, "Update new color: mId = $newId, color = ${String.format("0x%06X", 0xFFFFFF and color)}")
+                        log("Update new color: mId = $newId, color = ${String.format("0x%06X", 0xFFFFFF and color)}")
 
                         try {
                             XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)

@@ -1,12 +1,11 @@
 package me.iacn.biliroaming.hook
 
-import android.util.Log
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setIntField
-import me.iacn.biliroaming.Constant.TAG
 import me.iacn.biliroaming.XposedInit
+import me.iacn.biliroaming.log
 
 /**
  * Created by iAcn on 2020/2/27
@@ -16,7 +15,7 @@ class CommentHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!XposedInit.sPrefs.getBoolean("comment_floor", false)) return
-        Log.d(TAG, "startHook: Comment")
+        log("startHook: Comment")
 
         val floorHook: XC_MethodHook = object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {

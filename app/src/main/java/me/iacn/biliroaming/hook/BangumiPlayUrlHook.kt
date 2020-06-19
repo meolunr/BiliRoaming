@@ -1,10 +1,9 @@
 package me.iacn.biliroaming.hook
 
-import android.util.Log
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
-import me.iacn.biliroaming.Constant.TAG
 import me.iacn.biliroaming.XposedInit
+import me.iacn.biliroaming.log
 import me.iacn.biliroaming.network.BiliRoamingApi
 import me.iacn.biliroaming.network.StreamUtils
 import org.json.JSONException
@@ -21,7 +20,7 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!XposedInit.sPrefs.getBoolean("main_func", false)) return
-        Log.d(TAG, "startHook: BangumiPlayUrl")
+        log("startHook: BangumiPlayUrl")
 
         findAndHookMethod("com.bilibili.lib.okhttp.huc.OkHttpURLConnection", mClassLoader, "getInputStream", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
@@ -38,7 +37,7 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
                     if (isLimitWatchingArea(content)) {
                         content = BiliRoamingApi.getPlayUrl(queryString)
-                        Log.d(TAG, "Has replaced play url with proxy server")
+                        log("Has replaced play url with proxy server")
                     }
                     param.result = ByteArrayInputStream(content.toByteArray())
                 }
@@ -50,7 +49,7 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         return try {
             val json = JSONObject(jsonText)
             val code = json.optInt("code")
-            Log.d(TAG, "Loading play url: code = $code")
+            log("Loading play url: code = $code")
             code == -10403
         } catch (e: JSONException) {
             e.printStackTrace()
