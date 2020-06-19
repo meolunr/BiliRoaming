@@ -13,11 +13,9 @@ import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setIntField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import me.iacn.biliroaming.BiliBiliPackage
-import me.iacn.biliroaming.Constant.TYPE_EPISODE_ID
-import me.iacn.biliroaming.Constant.TYPE_SEASON_ID
 import me.iacn.biliroaming.XposedInit
 import me.iacn.biliroaming.log
-import me.iacn.biliroaming.network.BiliRoamingApi.getSeason
+import me.iacn.biliroaming.network.BiliRoamingApi
 import org.json.JSONObject
 
 /**
@@ -26,7 +24,12 @@ import org.json.JSONObject
  */
 class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
-    private val lastSeasonInfo: MutableMap<String, String?> by lazy { ArrayMap<String, String?>() }
+    private companion object {
+        private const val ID_TYPE_SEASON = 0
+        private const val ID_TYPE_EPISODE = 2
+    }
+
+    private val lastSeasonInfo: MutableMap<String, Any?> by lazy { ArrayMap<String, Any?>() }
 
     override fun startHook() {
         if (!XposedInit.sPrefs.getBoolean("main_func", false)) return
@@ -37,23 +40,15 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         XposedBridge.hookAllConstructors(paramsMapClass, object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 val paramMap = param.thisObject as MutableMap<String, String>
-                val type = param.args[1] as Int
 
-                when (type) {
-                    TYPE_SEASON_ID -> {
-                        val seasonId = paramMap["season_id"]
-                        lastSeasonInfo["season_id"] = "seasonId"
-                        log("Bangumi watching: seasonId = $seasonId")
-                    }
-                    TYPE_EPISODE_ID -> {
-                        val episodeId = paramMap["ep_id"]
-                        lastSeasonInfo["episode_id"] = episodeId
-                        log("Bangumi watching: episodeId = $episodeId")
-                    }
+                val id = when (param.args[1] as Int) {
+                    ID_TYPE_SEASON -> paramMap["season_id"]
+                    ID_TYPE_EPISODE -> "ep${paramMap["ep_id"]}"
                     else -> return
                 }
 
-                lastSeasonInfo["type"] = type.toString()
+                log("Bangumi watching: Id = $id")
+                lastSeasonInfo["id"] = id
                 lastSeasonInfo["access_key"] = paramMap["access_key"]
             }
         })
@@ -61,12 +56,13 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         val responseClass = findClass(BiliBiliPackage.getInstance().retrofitResponse(), mClassLoader)
         XposedBridge.hookAllConstructors(responseClass, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
+                val biliPackage = BiliBiliPackage.getInstance()
                 val body = param.args[1]
-                val bangumiApiResponse = BiliBiliPackage.getInstance().bangumiApiResponse()
+                val bangumiApiResponse = biliPackage.bangumiApiResponse()
 
                 // Filter non-bangumi responses
                 // If it isn't bangumi, the type variable will not exist in this map
-                if (!bangumiApiResponse.isInstance(body) || !lastSeasonInfo.containsKey("type")) return
+                if (!bangumiApiResponse.isInstance(body) or !lastSeasonInfo.containsKey("id")) return
 
                 val result = getObjectField(body, "result")
                 // Filter normal bangumi and other responses
@@ -82,8 +78,6 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 log("Get new season information from proxy server: code = $code, useCache = $useCache")
 
                 if (code == 0) {
-                    val biliPackage = BiliBiliPackage.getInstance()
-
                     val resultJson = contentJson.optJSONObject("result")
                     val beanClass = BiliBiliPackage.getInstance().bangumiUniformSeason()
                     val newResult = callStaticMethod(biliPackage.fastJson(), biliPackage.fastJsonParse(), resultJson!!.toString(), beanClass)
@@ -151,19 +145,8 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     private fun getSeasonFromProxyServer(useCache: Boolean): String {
         log("Found a restricted bangumi: $lastSeasonInfo")
-        var id: String? = null
-        val accessKey = lastSeasonInfo["access_key"] as String?
-        when (lastSeasonInfo["type"]!!.toInt()) {
-            TYPE_SEASON_ID -> id = lastSeasonInfo["season_id"] as String?
-            TYPE_EPISODE_ID -> id = "ep" + lastSeasonInfo["episode_id"]
-        }
-
-        println("--------------------")
-        println(lastSeasonInfo)
-        println(accessKey)
-        println(useCache)
-        val season = getSeason(id!!, accessKey!!, useCache)
-        println(season)
-        return season
+        val id = lastSeasonInfo["id"] as String
+        val accessKey = lastSeasonInfo["access_key"] as String
+        return BiliRoamingApi.getSeason(id, accessKey, useCache)
     }
 }

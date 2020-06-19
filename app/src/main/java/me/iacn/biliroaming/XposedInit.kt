@@ -3,7 +3,6 @@ package me.iacn.biliroaming
 import android.app.Application
 import android.app.Instrumentation
 import android.content.Context
-import android.util.Log
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
@@ -42,7 +41,7 @@ class XposedInit : IXposedHookLoadPackage {
                 // Hook main process and download process
                 when (lpparam.processName) {
                     "tv.danmaku.bili" -> {
-                        Log.d(Constant.TAG, "BiliBili process launched ...")
+                        log("BiliBili process launched...")
                         BiliBiliPackage.getInstance().init(lpparam.classLoader, param.args[0] as Context)
                         BangumiSeasonHook(lpparam.classLoader).startHook()
                         BangumiPlayUrlHook(lpparam.classLoader).startHook()
