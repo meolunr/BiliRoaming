@@ -39,7 +39,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 "BangumiDetailApiService\$UniformSeasonParamsMap", mClassLoader)
         XposedBridge.hookAllConstructors(paramsMapClass, object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
-                val paramMap = param.thisObject as MutableMap<String, String>
+                val paramMap = param.thisObject as MutableMap<*, *>
 
                 val id = when (param.args[1] as Int) {
                     ID_TYPE_SEASON -> paramMap["season_id"]
@@ -107,28 +107,19 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             }
         })
 
-        // ===========================================
-        try {
-            val urlHook: Any = object : XC_MethodHook() {
-                @Throws(Throwable::class)
-                override fun afterHookedMethod(param: MethodHookParam) {
-                    val redirectUrl =
-                            getObjectField(param.thisObject, "redirectUrl") as String
-                    if (redirectUrl.isEmpty()) return
-                    param.result =
-                            callMethod(param.thisObject, "getUrl", redirectUrl)
+        // Fix issue that video can't be found by clicking on the video card from dynamic tab
+        val urlHook = object : XC_MethodHook() {
+            override fun afterHookedMethod(param: MethodHookParam) {
+                val redirectUrl = getObjectField(param.thisObject, "redirectUrl") as String
+                if (redirectUrl.isNotEmpty()) {
+                    param.result = callMethod(param.thisObject, "getUrl", redirectUrl)
                 }
             }
-
-            findAndHookMethod("com.bilibili.bplus.followingcard.api.entity.cardBean.VideoCard",
-                    mClassLoader, "getJumpUrl", urlHook)
-
-            findAndHookMethod("com.bilibili.bplus.followingcard.api.entity.cardBean.VideoCard",
-                    mClassLoader, "getCommentJumpUrl", urlHook)
-        } catch (ignored: Throwable) {
         }
+        val videoCardClass = findClass("com.bilibili.bplus.followingcard.api.entity.cardBean.VideoCard", mClassLoader)
+        findAndHookMethod(videoCardClass, "getJumpUrl", urlHook)
+        findAndHookMethod(videoCardClass, "getCommentJumpUrl", urlHook)
     }
-    // ===========================================
 
     private fun isBangumiWithWatchPermission(code: Int, result: Any?): Boolean {
         log("BangumiApiResponse: code = $code, result = $result")
