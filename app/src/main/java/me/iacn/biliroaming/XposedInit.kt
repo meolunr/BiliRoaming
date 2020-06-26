@@ -31,7 +31,7 @@ class XposedInit : IXposedHookLoadPackage {
                     "isModuleActive", XC_MethodReplacement.returnConstant(true))
         }
 
-        if (Constant.BILIBILI_PACKAGENAME != lpparam.packageName) return
+        if (BILIBILI_PACKAGENAME != lpparam.packageName) return
 
         sPrefs = XSharedPreferences(BuildConfig.APPLICATION_ID)
 
