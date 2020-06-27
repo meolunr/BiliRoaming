@@ -20,8 +20,6 @@ import de.robv.android.xposed.XposedHelpers.setIntField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import me.iacn.biliroaming.BiliBiliPackage
 import me.iacn.biliroaming.ColorChooseDialog
-import me.iacn.biliroaming.Constant.CUSTOM_COLOR_KEY
-import me.iacn.biliroaming.Constant.DEFAULT_CUSTOM_COLOR
 import me.iacn.biliroaming.XposedInit
 import me.iacn.biliroaming.log
 
@@ -29,10 +27,15 @@ import me.iacn.biliroaming.log
  * Created by iAcn on 2019/7/14
  * Email i@iacn.me
  */
-class CustomThemeHook(classLoader: ClassLoader?) : BaseHook(classLoader) {
+class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     companion object {
         private const val CUSTOM_THEME_ID = 114514  // ん？
+        private const val CUSTOM_COLOR_KEY = "biliroaming_custom_color"
+
+        // Kotlin does not natively support negative values
+        // See: https://youtrack.jetbrains.com/issue/KT-2780
+        private var DEFAULT_CUSTOM_COLOR = 0xFFF19483.toInt()
     }
 
     override fun startHook() {
