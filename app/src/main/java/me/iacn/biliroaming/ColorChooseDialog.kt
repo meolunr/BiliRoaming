@@ -2,11 +2,13 @@ package me.iacn.biliroaming
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
@@ -28,6 +30,11 @@ class ColorChooseDialog(context: Context, defColor: Int) : AlertDialog.Builder(c
     private lateinit var tvColorR: TextView
     private lateinit var tvColorG: TextView
     private lateinit var tvColorB: TextView
+
+    private var btnPositive: Button? = null
+    private var btnNegative: Button? = null
+
+    private val mDefColor = defColor
 
     init {
         val moduleContext = context.createPackageContext(BuildConfig.APPLICATION_ID, Context.CONTEXT_IGNORE_SECURITY)
@@ -108,6 +115,7 @@ class ColorChooseDialog(context: Context, defColor: Int) : AlertDialog.Builder(c
         tvColorB.text = progressB.toString()
 
         updateSeekBarColor(color)
+        updateButtonColor(color)
     }
 
     private fun updateSeekBarColor(color: Int) {
@@ -121,6 +129,19 @@ class ColorChooseDialog(context: Context, defColor: Int) : AlertDialog.Builder(c
 
         sbColorB.progressTintList = colorList
         sbColorB.thumbTintList = colorList
+    }
+
+    private fun updateButtonColor(color: Int) {
+        btnPositive?.setTextColor(color)
+        btnNegative?.setTextColor(color)
+    }
+
+    override fun show(): AlertDialog {
+        val dialog = super.show()
+        btnPositive = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+        btnNegative = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+        updateButtonColor(mDefColor)
+        return dialog
     }
 
     fun getColor(): Int = Color.rgb(sbColorR.progress, sbColorG.progress, sbColorB.progress)
