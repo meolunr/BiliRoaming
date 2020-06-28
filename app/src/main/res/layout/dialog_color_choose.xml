@@ -31,9 +31,11 @@
             android:layout_height="wrap_content"
             android:digits="0123456789abcdefABCDEF"
             android:gravity="center"
+            android:inputType="textNoSuggestions"
             android:maxLength="6"
             android:textColor="#323232"
             android:textSize="20sp"
+            tools:ignore="Autofill"
             tools:text="009788" />
 
     </LinearLayout>
