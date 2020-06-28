@@ -2,6 +2,7 @@ package me.iacn.biliroaming
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.text.Editable
 import android.text.TextWatcher
@@ -11,12 +12,12 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 
+
 /**
  * Created by iAcn on 2019/7/14
  * Email i@iacn.me
  */
 class ColorChooseDialog(context: Context, defColor: Int) : AlertDialog.Builder(context) {
-
     private lateinit var sampleView: View
     private lateinit var etColor: EditText
 
@@ -105,6 +106,21 @@ class ColorChooseDialog(context: Context, defColor: Int) : AlertDialog.Builder(c
         tvColorR.text = progressR.toString()
         tvColorG.text = progressG.toString()
         tvColorB.text = progressB.toString()
+
+        updateSeekBarColor(color)
+    }
+
+    private fun updateSeekBarColor(color: Int) {
+        val colorList = ColorStateList(arrayOf(intArrayOf()), intArrayOf(color))
+
+        sbColorR.progressTintList = colorList
+        sbColorR.thumbTintList = colorList
+
+        sbColorG.progressTintList = colorList
+        sbColorG.thumbTintList = colorList
+
+        sbColorB.progressTintList = colorList
+        sbColorB.thumbTintList = colorList
     }
 
     fun getColor(): Int = Color.rgb(sbColorR.progress, sbColorG.progress, sbColorB.progress)
