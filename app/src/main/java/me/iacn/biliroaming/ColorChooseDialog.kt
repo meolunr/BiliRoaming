@@ -13,6 +13,7 @@ import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
+import me.iacn.editcolorhelper.EditColorHelper
 
 
 /**
@@ -116,6 +117,7 @@ class ColorChooseDialog(context: Context, defColor: Int) : AlertDialog.Builder(c
 
         updateSeekBarColor(color)
         updateButtonColor(color)
+        EditColorHelper.setColor(etColor, color)
     }
 
     private fun updateSeekBarColor(color: Int) {
