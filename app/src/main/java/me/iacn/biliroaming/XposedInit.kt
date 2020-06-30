@@ -27,7 +27,7 @@ class XposedInit : IXposedHookLoadPackage {
 
     override fun handleLoadPackage(lpparam: LoadPackageParam) {
         if (BuildConfig.APPLICATION_ID == lpparam.packageName) {
-            findAndHookMethod(MainActivity::class.java.name, lpparam.classLoader,
+            findAndHookMethod(MainActivity.Companion::class.java.name, lpparam.classLoader,
                     "isModuleActive", XC_MethodReplacement.returnConstant(true))
         }
 
