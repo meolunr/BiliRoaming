@@ -42,7 +42,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         if (!XposedInit.sPrefs.getBoolean("custom_theme", false)) return
         log("startHook: CustomTheme")
 
-        val biliPackage = BiliBiliPackage.getInstance()
+        val biliPackage = BiliBiliPackage.instance
         val helperClass = biliPackage.themeHelper()
         val colorArray = getStaticObjectField(helperClass, biliPackage.colorArray()) as SparseArray<IntArray>
 
@@ -85,7 +85,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         val color = colorDialog.getColor()
                         val colors = generateColorArray(color)
 
-                        val colorArray = getStaticObjectField(helperClass, BiliBiliPackage.getInstance().colorArray()) as SparseArray<IntArray>
+                        val colorArray = getStaticObjectField(helperClass, BiliBiliPackage.instance.colorArray()) as SparseArray<IntArray>
                         colorArray.put(CUSTOM_THEME_ID, colors)
                         colorArray.put(-1, colors)  // Add a new color id but it won't be saved
 

@@ -53,10 +53,10 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             }
         })
 
-        val responseClass = findClass(BiliBiliPackage.getInstance().retrofitResponse(), mClassLoader)
+        val responseClass = findClass(BiliBiliPackage.instance.retrofitResponse(), mClassLoader)
         XposedBridge.hookAllConstructors(responseClass, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
-                val biliPackage = BiliBiliPackage.getInstance()
+                val biliPackage = BiliBiliPackage.instance
                 val body = param.args[1]
                 val bangumiApiResponse = biliPackage.bangumiApiResponse()
 
@@ -124,7 +124,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     private fun isBangumiWithWatchPermission(code: Int, result: Any?): Boolean {
         log("BangumiApiResponse: code = $code, result = $result")
         result?.let {
-            val bangumiSeasonClass = BiliBiliPackage.getInstance().bangumiUniformSeason()
+            val bangumiSeasonClass = BiliBiliPackage.instance.bangumiUniformSeason()
             if (bangumiSeasonClass.isInstance(it)) {
                 val rights = getObjectField(result, "rights")
                 val areaLimit = getBooleanField(rights, "areaLimit")

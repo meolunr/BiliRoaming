@@ -42,7 +42,7 @@ class XposedInit : IXposedHookLoadPackage {
                 when (lpparam.processName) {
                     "tv.danmaku.bili" -> {
                         log("BiliBili process launched...")
-                        BiliBiliPackage.getInstance().init(lpparam.classLoader, param.args[0] as Context)
+                        BiliBiliPackage.instance.init(lpparam.classLoader, param.args[0] as Context)
                         BangumiSeasonHook(lpparam.classLoader).startHook()
                         BangumiPlayUrlHook(lpparam.classLoader).startHook()
                         CustomThemeHook(lpparam.classLoader).startHook()
