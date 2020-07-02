@@ -1,12 +1,10 @@
 package me.iacn.biliroaming
 
 import android.content.Context
-import android.util.Log
 import android.util.SparseArray
 import android.view.View
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
-import me.iacn.biliroaming.Constant.TAG
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -28,6 +26,16 @@ class BiliBiliPackage private constructor() {
     private var bangumiUniformSeasonClass: WeakReference<Class<*>?>? = null
     private var themeHelperClass: WeakReference<Class<*>?>? = null
     private var mHasModulesInResult = false
+
+    companion object {
+        private const val HOOK_INFO_FILE_NAME = "hookinfo.dat"
+
+        val instance: BiliBiliPackage by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
+            BiliBiliPackage()
+        }
+    }
+
+
     fun init(classLoader: ClassLoader?, context: Context) {
         mClassLoader = classLoader
         readHookInfo(context)
@@ -83,7 +91,7 @@ class BiliBiliPackage private constructor() {
     }
 
     fun hasModulesInResult(): Boolean {
-        Log.d(TAG, "hasModulesInResult: $mHasModulesInResult")
+        log("hasModulesInResult: $mHasModulesInResult")
         return mHasModulesInResult
     }
 
@@ -97,16 +105,16 @@ class BiliBiliPackage private constructor() {
 
     private fun readHookInfo(context: Context) {
         try {
-            val hookInfoFile = File(context.cacheDir, Constant.HOOK_INFO_FILE_NAME)
-            Log.d(TAG, "Reading hook info: $hookInfoFile")
+            val hookInfoFile = File(context.cacheDir, HOOK_INFO_FILE_NAME)
+            log("Reading hook info: $hookInfoFile")
             val startTime = System.currentTimeMillis()
             if (hookInfoFile.isFile && hookInfoFile.canRead()) {
-                val lastUpdateTime: Long = context.packageManager.getPackageInfo(Constant.BILIBILI_PACKAGENAME, 0).lastUpdateTime
+                val lastUpdateTime: Long = context.packageManager.getPackageInfo(BILIBILI_PACKAGENAME, 0).lastUpdateTime
                 val stream = ObjectInputStream(FileInputStream(hookInfoFile))
                 if (stream.readLong() == lastUpdateTime) mHookInfo = stream.readObject() as MutableMap<String, String?>
             }
             val endTime = System.currentTimeMillis()
-            Log.d(TAG, "Read hook info completed: take " + (endTime - startTime) + " ms")
+            log("Read hook info completed: take " + (endTime - startTime) + " ms")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -140,14 +148,14 @@ class BiliBiliPackage private constructor() {
             mHookInfo!!["class_theme_list_click"] = findThemeListClickClass()
             needUpdate = true
         }
-        Log.d(TAG, "Check hook info completed: needUpdate = $needUpdate")
+        log("Check hook info completed: needUpdate = $needUpdate")
         return needUpdate
     }
 
     private fun writeHookInfo(context: Context) {
         try {
-            val hookInfoFile = File(context.cacheDir, Constant.HOOK_INFO_FILE_NAME)
-            val lastUpdateTime: Long = context.packageManager.getPackageInfo(Constant.BILIBILI_PACKAGENAME, 0).lastUpdateTime
+            val hookInfoFile = File(context.cacheDir, HOOK_INFO_FILE_NAME)
+            val lastUpdateTime: Long = context.packageManager.getPackageInfo(BILIBILI_PACKAGENAME, 0).lastUpdateTime
             if (hookInfoFile.exists()) hookInfoFile.delete()
             val stream = ObjectOutputStream(FileOutputStream(hookInfoFile))
             stream.writeLong(lastUpdateTime)
@@ -157,7 +165,7 @@ class BiliBiliPackage private constructor() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        Log.d(TAG, "Write hook info completed")
+        log("Write hook info completed")
     }
 
     private fun findRetrofitResponseClass(): String? {
@@ -205,21 +213,5 @@ class BiliBiliPackage private constructor() {
             }
         }
         return null
-    }
-
-    companion object {
-        @Volatile
-        private var sInstance: BiliBiliPackage? = null
-        val instance: BiliBiliPackage?
-            get() {
-                if (sInstance == null) {
-                    synchronized(BiliBiliPackage::class.java) {
-                        if (sInstance == null) {
-                            sInstance = BiliBiliPackage()
-                        }
-                    }
-                }
-                return sInstance
-            }
     }
 }
