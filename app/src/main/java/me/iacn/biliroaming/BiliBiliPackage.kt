@@ -5,6 +5,7 @@ import android.util.SparseArray
 import android.view.View
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
+import de.robv.android.xposed.XposedHelpers.findClass
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -12,19 +13,20 @@ import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.lang.ref.WeakReference
 import java.lang.reflect.ParameterizedType
-import java.util.HashMap
 
 /**
  * Created by iAcn on 2019/4/5
  * Email i@iacn.me
  */
 class BiliBiliPackage private constructor() {
-    private var mClassLoader: ClassLoader? = null
-    private var mHookInfo: MutableMap<String, String?>? = null
+    private lateinit var mClassLoader: ClassLoader
+    private var mHookInfo: MutableMap<String, String> = mutableMapOf()
+
     private var bangumiApiResponseClass: WeakReference<Class<*>?>? = null
     private var fastJsonClass: WeakReference<Class<*>?>? = null
     private var bangumiUniformSeasonClass: WeakReference<Class<*>?>? = null
     private var themeHelperClass: WeakReference<Class<*>?>? = null
+
     private var mHasModulesInResult = false
 
     companion object {
@@ -35,9 +37,9 @@ class BiliBiliPackage private constructor() {
         }
     }
 
-
-    fun init(classLoader: ClassLoader?, context: Context) {
+    fun init(classLoader: ClassLoader, context: Context) {
         mClassLoader = classLoader
+
         readHookInfo(context)
         if (checkHookInfo()) {
             writeHookInfo(context)
@@ -45,39 +47,39 @@ class BiliBiliPackage private constructor() {
     }
 
     fun retrofitResponse(): String? {
-        return mHookInfo!!["class_retrofit_response"]
+        return mHookInfo["class_retrofit_response"]
     }
 
     fun fastJsonParse(): String? {
-        return mHookInfo!!["method_fastjson_parse"]
+        return mHookInfo["method_fastjson_parse"]
     }
 
     fun colorArray(): String? {
-        return mHookInfo!!["field_color_array"]
+        return mHookInfo["field_color_array"]
     }
 
     fun themeListClickListener(): String? {
-        return mHookInfo!!["class_theme_list_click"]
+        return mHookInfo["class_theme_list_click"]
     }
 
-    fun bangumiApiResponse(): Class<*>? {
+    fun bangumiApiResponse(): Class<*> {
         bangumiApiResponseClass = checkNullOrReturn(bangumiApiResponseClass,
                 "com.bilibili.bangumi.data.common.api.BangumiApiResponse")
-        return bangumiApiResponseClass!!.get()
+        return bangumiApiResponseClass!!.get()!!
     }
 
-    fun bangumiUniformSeason(): Class<*>? {
+    fun bangumiUniformSeason(): Class<*> {
         if (bangumiUniformSeasonClass == null || bangumiUniformSeasonClass!!.get() == null) {
-            val clazz = XposedHelpers.findClass(
-                    "com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason", mClassLoader)
+            val clazz = findClass("com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason", mClassLoader)
             bangumiUniformSeasonClass = WeakReference(clazz)
+
             try {
                 clazz.getField("modules")
                 mHasModulesInResult = true
             } catch (ignored: NoSuchFieldException) {
             }
         }
-        return bangumiUniformSeasonClass!!.get()
+        return bangumiUniformSeasonClass!!.get()!!
     }
 
     fun fastJson(): Class<*>? {
@@ -104,20 +106,21 @@ class BiliBiliPackage private constructor() {
     }
 
     private fun readHookInfo(context: Context) {
-        try {
-            val hookInfoFile = File(context.cacheDir, HOOK_INFO_FILE_NAME)
-            log("Reading hook info: $hookInfoFile")
-            val startTime = System.currentTimeMillis()
-            if (hookInfoFile.isFile && hookInfoFile.canRead()) {
-                val lastUpdateTime: Long = context.packageManager.getPackageInfo(BILIBILI_PACKAGENAME, 0).lastUpdateTime
-                val stream = ObjectInputStream(FileInputStream(hookInfoFile))
-                if (stream.readLong() == lastUpdateTime) mHookInfo = stream.readObject() as MutableMap<String, String?>
+        val hookInfoFile = File(context.cacheDir, HOOK_INFO_FILE_NAME)
+        log("Reading hook info: $hookInfoFile")
+        val startTime = System.currentTimeMillis()
+
+        if (hookInfoFile.isFile && hookInfoFile.canRead()) {
+            val lastUpdateTime = context.packageManager.getPackageInfo(BILIBILI_PACKAGENAME, 0).lastUpdateTime
+            ObjectInputStream(FileInputStream(hookInfoFile)).use {
+                if (it.readLong() == lastUpdateTime) {
+                    mHookInfo = it.readObject() as MutableMap<String, String>
+                }
             }
-            val endTime = System.currentTimeMillis()
-            log("Read hook info completed: take " + (endTime - startTime) + " ms")
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
+
+        val endTime = System.currentTimeMillis()
+        log("Read hook info completed: take ${endTime - startTime} ms")
     }
 
     /**
@@ -125,45 +128,41 @@ class BiliBiliPackage private constructor() {
      */
     private fun checkHookInfo(): Boolean {
         var needUpdate = false
-        if (mHookInfo == null) {
-            mHookInfo = HashMap()
+
+        if ("class_retrofit_response" !in mHookInfo) {
+            mHookInfo["class_retrofit_response"] = findRetrofitResponseClass()
             needUpdate = true
         }
-        if (!mHookInfo!!.containsKey("class_retrofit_response")) {
-            mHookInfo!!["class_retrofit_response"] = findRetrofitResponseClass()
-            needUpdate = true
-        }
-        if (!mHookInfo!!.containsKey("class_fastjson")) {
+        if ("class_fastjson" !in mHookInfo) {
             val fastJsonClass = findFastJsonClass()
             val notObfuscated = "JSON" == fastJsonClass.simpleName
-            mHookInfo!!["class_fastjson"] = fastJsonClass.name
-            mHookInfo!!["method_fastjson_parse"] = if (notObfuscated) "parseObject" else "a"
+            mHookInfo["class_fastjson"] = fastJsonClass.name
+            mHookInfo["method_fastjson_parse"] = if (notObfuscated) "parseObject" else "a"
             needUpdate = true
         }
-        if (!mHookInfo!!.containsKey("field_color_array")) {
-            mHookInfo!!["field_color_array"] = findColorArrayField()
+        if ("field_color_array" !in mHookInfo) {
+            mHookInfo["field_color_array"] = findColorArrayField()
             needUpdate = true
         }
-        if (!mHookInfo!!.containsKey("class_theme_list_click")) {
-            mHookInfo!!["class_theme_list_click"] = findThemeListClickClass()
+        if ("class_theme_list_click" !in mHookInfo) {
+            mHookInfo["class_theme_list_click"] = findThemeListClickClass()
             needUpdate = true
         }
+
         log("Check hook info completed: needUpdate = $needUpdate")
         return needUpdate
     }
 
     private fun writeHookInfo(context: Context) {
-        try {
-            val hookInfoFile = File(context.cacheDir, HOOK_INFO_FILE_NAME)
-            val lastUpdateTime: Long = context.packageManager.getPackageInfo(BILIBILI_PACKAGENAME, 0).lastUpdateTime
-            if (hookInfoFile.exists()) hookInfoFile.delete()
-            val stream = ObjectOutputStream(FileOutputStream(hookInfoFile))
-            stream.writeLong(lastUpdateTime)
-            stream.writeObject(mHookInfo)
-            stream.flush()
-            stream.close()
-        } catch (e: Exception) {
-            e.printStackTrace()
+        val hookInfoFile = File(context.cacheDir, HOOK_INFO_FILE_NAME)
+        val lastUpdateTime = context.packageManager.getPackageInfo(BILIBILI_PACKAGENAME, 0).lastUpdateTime
+
+        if (hookInfoFile.exists()) hookInfoFile.delete()
+
+        ObjectOutputStream(FileOutputStream(hookInfoFile)).use {
+            it.writeLong(lastUpdateTime)
+            it.writeObject(mHookInfo)
+            it.flush()
         }
         log("Write hook info completed")
     }
