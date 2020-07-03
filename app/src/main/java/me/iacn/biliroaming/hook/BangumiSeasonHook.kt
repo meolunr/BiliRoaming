@@ -58,7 +58,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val biliPackage = BiliBiliPackage.instance
                 val body = param.args[1]
-                val bangumiApiResponse = biliPackage.bangumiApiResponse()
+                val bangumiApiResponse = biliPackage.bangumiApiResponse
 
                 // Filter non-bangumi responses
                 // If it isn't bangumi, the type variable will not exist in this map
@@ -79,8 +79,8 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
                 if (code == 0) {
                     val resultJson = contentJson.optJSONObject("result")
-                    val beanClass = biliPackage.bangumiUniformSeason()
-                    val newResult = callStaticMethod(biliPackage.fastJson(), biliPackage.fastJsonParse(), resultJson!!.toString(), beanClass)
+                    val beanClass = biliPackage.bangumiUniformSeason
+                    val newResult = callStaticMethod(biliPackage.fastJson, biliPackage.fastJsonParse(), resultJson!!.toString(), beanClass)
 
                     if (useCache) {
                         // Replace only episodes and rights
@@ -124,7 +124,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     private fun isBangumiWithWatchPermission(code: Int, result: Any?): Boolean {
         log("BangumiApiResponse: code = $code, result = $result")
         result?.let {
-            val bangumiSeasonClass = BiliBiliPackage.instance.bangumiUniformSeason()
+            val bangumiSeasonClass = BiliBiliPackage.instance.bangumiUniformSeason
             if (bangumiSeasonClass.isInstance(it)) {
                 val rights = getObjectField(result, "rights")
                 val areaLimit = getBooleanField(rights, "areaLimit")

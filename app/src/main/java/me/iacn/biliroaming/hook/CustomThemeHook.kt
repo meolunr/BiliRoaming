@@ -43,7 +43,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         log("startHook: CustomTheme")
 
         val biliPackage = BiliBiliPackage.instance
-        val helperClass = biliPackage.themeHelper()
+        val helperClass = biliPackage.themeHelper
         val colorArray = getStaticObjectField(helperClass, biliPackage.colorArray()) as SparseArray<IntArray>
 
         val primaryColor = getCustomColor()

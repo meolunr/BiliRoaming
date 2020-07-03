@@ -23,14 +23,9 @@ class BiliBiliPackage private constructor() {
     private lateinit var mClassLoader: ClassLoader
     private var mHookInfo: MutableMap<String, String> = mutableMapOf()
 
-    private var bangumiApiResponseClass: WeakReference<Class<*>?>? = null
-    private var fastJsonClass: WeakReference<Class<*>?>? = null
-    private var bangumiUniformSeasonClass: WeakReference<Class<*>?>? = null
-    private var themeHelperClass: WeakReference<Class<*>?>? = null
-
     var bangumiApiResponse: Class<*> by Weak { findClass("com.bilibili.bangumi.data.common.api.BangumiApiResponse", mClassLoader) }
     var fastJson: Class<*> by Weak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
-    var bangumiUniformSeason: Class<*> by Weak(::bangumiUniformSeasoninitializer)
+    var bangumiUniformSeason: Class<*> by Weak(::searchBangumiUniformSeason)
     var themeHelper: Class<*> by Weak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
 
     private var mHasModulesInResult = false
@@ -47,6 +42,7 @@ class BiliBiliPackage private constructor() {
         mClassLoader = classLoader
 
         readHookInfo(context)
+        println(mHasModulesInResult)
         /*if (checkHookInfo()) {
             writeHookInfo(context)
         }*/
@@ -68,47 +64,9 @@ class BiliBiliPackage private constructor() {
         return mHookInfo["class_theme_list_click"]
     }
 
-    fun bangumiApiResponse(): Class<*> {
-        bangumiApiResponseClass = checkNullOrReturn(bangumiApiResponseClass,
-                "com.bilibili.bangumi.data.common.api.BangumiApiResponse")
-        return bangumiApiResponseClass!!.get()!!
-    }
-
-    fun bangumiUniformSeason(): Class<*> {
-        if (bangumiUniformSeasonClass == null || bangumiUniformSeasonClass!!.get() == null) {
-            val clazz = findClass("com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason", mClassLoader)
-            bangumiUniformSeasonClass = WeakReference(clazz)
-
-            try {
-                clazz.getField("modules")
-                mHasModulesInResult = true
-            } catch (ignored: NoSuchFieldException) {
-            }
-        }
-        return bangumiUniformSeasonClass!!.get()!!
-    }
-
-    fun fastJson(): Class<*>? {
-        fastJsonClass = checkNullOrReturn(fastJsonClass, mHookInfo!!["class_fastjson"])
-        return fastJsonClass!!.get()
-    }
-
-    fun themeHelper(): Class<*>? {
-        themeHelperClass = checkNullOrReturn(themeHelperClass, "tv.danmaku.bili.ui.theme.a")
-        return themeHelperClass!!.get()
-    }
-
     fun hasModulesInResult(): Boolean {
         log("hasModulesInResult: $mHasModulesInResult")
         return mHasModulesInResult
-    }
-
-    private fun checkNullOrReturn(clazz: WeakReference<Class<*>?>?, className: String?): WeakReference<Class<*>?> {
-        var clazz = clazz
-        if (clazz == null || clazz.get() == null) {
-            clazz = WeakReference(findClass(className, mClassLoader))
-        }
-        return clazz
     }
 
     //==========================================================
@@ -174,19 +132,20 @@ class BiliBiliPackage private constructor() {
         log("Write hook info completed")
     }
 
-    private fun bangumiUniformSeasoninitializer(): Class<*> {
+    private fun searchBangumiUniformSeason(): Class<*> {
         val clazz = findClass("com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason", mClassLoader)
         try {
             clazz.getField("modules")
             mHasModulesInResult = true
         } catch (ignored: NoSuchFieldException) {
+            println(ignored.stackTrace)
         }
         return clazz
     }
     //==========================================================
 
     private fun findRetrofitResponseClass(): String? {
-        val methods = bangumiApiResponse()!!.methods
+        val methods = bangumiApiResponse.methods
         for (method in methods) {
             if ("extractResult" == method.name) {
                 val responseClass = method.parameterTypes[0]
@@ -207,7 +166,7 @@ class BiliBiliPackage private constructor() {
     }
 
     private fun findColorArrayField(): String {
-        val fields = themeHelper()!!.declaredFields
+        val fields = themeHelper.declaredFields
         for (field in fields) {
             if (field.type == SparseArray::class.java) {
                 val genericType = field.genericType as ParameterizedType
@@ -232,7 +191,7 @@ class BiliBiliPackage private constructor() {
         return null
     }
 
-    class Weak(val initializer: () -> Class<*>?) {
+    private class Weak(val initializer: () -> Class<*>?) {
         private var weakReference: WeakReference<Class<*>?>? = null
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Class<*> {
