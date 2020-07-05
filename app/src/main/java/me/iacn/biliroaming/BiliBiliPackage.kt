@@ -22,12 +22,21 @@ class BiliBiliPackage private constructor() {
     private lateinit var mClassLoader: ClassLoader
     private var mHookInfo: MutableMap<String, String> = mutableMapOf()
 
-    var bangumiApiResponse: Class<*> by Weak { findClass("com.bilibili.bangumi.data.common.api.BangumiApiResponse", mClassLoader) }
-    var fastJson: Class<*> by Weak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
-    var bangumiUniformSeason: Class<*> by Weak(::searchBangumiUniformSeasonClass)
-    var themeHelper: Class<*> by Weak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
+    val retrofitResponse get() = mHookInfo["class_retrofit_response"]
+    val fastJsonParse get() = mHookInfo["method_fastjson_parse"]
+    val colorArray get() = mHookInfo["field_color_array"]
+    val themeListClickListener get() = mHookInfo["class_theme_list_click"]
 
-    private var mHasModulesInResult = false
+    val bangumiApiResponse: Class<*> by Weak { findClass("com.bilibili.bangumi.data.common.api.BangumiApiResponse", mClassLoader) }
+    val fastJson: Class<*> by Weak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
+    val bangumiUniformSeason: Class<*> by Weak(::searchBangumiUniformSeasonClass)
+    val themeHelper: Class<*> by Weak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
+
+    var hasModulesInResult = false
+        get() {
+            log("hasModulesInResult: $field")
+            return field
+        }
 
     companion object {
         private const val HOOK_INFO_FILE_NAME = "hookinfo.dat"
@@ -44,27 +53,6 @@ class BiliBiliPackage private constructor() {
         if (checkHookInfo()) {
             writeHookInfo(context)
         }
-    }
-
-    fun retrofitResponse(): String? {
-        return mHookInfo["class_retrofit_response"]
-    }
-
-    fun fastJsonParse(): String? {
-        return mHookInfo["method_fastjson_parse"]
-    }
-
-    fun colorArray(): String? {
-        return mHookInfo["field_color_array"]
-    }
-
-    fun themeListClickListener(): String? {
-        return mHookInfo["class_theme_list_click"]
-    }
-
-    fun hasModulesInResult(): Boolean {
-        log("hasModulesInResult: $mHasModulesInResult")
-        return mHasModulesInResult
     }
 
     private fun readHookInfo(context: Context) {
@@ -133,7 +121,7 @@ class BiliBiliPackage private constructor() {
         val clazz = findClass("com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason", mClassLoader)
         try {
             clazz.getField("modules")
-            mHasModulesInResult = true
+            hasModulesInResult = true
         } catch (ignored: NoSuchFieldException) {
         }
         return clazz

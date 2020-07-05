@@ -53,7 +53,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             }
         })
 
-        val responseClass = findClass(BiliBiliPackage.instance.retrofitResponse(), mClassLoader)
+        val responseClass = findClass(BiliBiliPackage.instance.retrofitResponse, mClassLoader)
         XposedBridge.hookAllConstructors(responseClass, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val biliPackage = BiliBiliPackage.instance
@@ -80,7 +80,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 if (code == 0) {
                     val resultJson = contentJson.optJSONObject("result")
                     val beanClass = biliPackage.bangumiUniformSeason
-                    val newResult = callStaticMethod(biliPackage.fastJson, biliPackage.fastJsonParse(), resultJson!!.toString(), beanClass)
+                    val newResult = callStaticMethod(biliPackage.fastJson, biliPackage.fastJsonParse, resultJson!!.toString(), beanClass)
 
                     if (useCache) {
                         // Replace only episodes and rights
@@ -92,7 +92,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                             setObjectField(result, "episodes", newEpisodes)
                             setObjectField(result, "seasonLimit", null)
 
-                            if (biliPackage.hasModulesInResult()) {
+                            if (biliPackage.hasModulesInResult) {
                                 val newModules = getObjectField(newResult, "modules")
                                 setObjectField(result, "modules", newModules)
                             }

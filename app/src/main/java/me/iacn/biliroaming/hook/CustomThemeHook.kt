@@ -44,7 +44,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
         val biliPackage = BiliBiliPackage.instance
         val helperClass = biliPackage.themeHelper
-        val colorArray = getStaticObjectField(helperClass, biliPackage.colorArray()) as SparseArray<IntArray>
+        val colorArray = getStaticObjectField(helperClass, biliPackage.colorArray) as SparseArray<IntArray>
 
         val primaryColor = getCustomColor()
         colorArray.put(CUSTOM_THEME_ID, generateColorArray(primaryColor))
@@ -67,7 +67,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             }
         })
 
-        findAndHookMethod(biliPackage.themeListClickListener(), mClassLoader, "onClick", View::class.java, object : XC_MethodHook() {
+        findAndHookMethod(biliPackage.themeListClickListener, mClassLoader, "onClick", View::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val view = param.args[0] as View
                 val idName = view.resources.getResourceEntryName(view.id)
@@ -85,7 +85,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         val color = colorDialog.getColor()
                         val colors = generateColorArray(color)
 
-                        val colorArray = getStaticObjectField(helperClass, BiliBiliPackage.instance.colorArray()) as SparseArray<IntArray>
+                        val colorArray = getStaticObjectField(helperClass, BiliBiliPackage.instance.colorArray) as SparseArray<IntArray>
                         colorArray.put(CUSTOM_THEME_ID, colors)
                         colorArray.put(-1, colors)  // Add a new color id but it won't be saved
 
