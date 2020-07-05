@@ -3,7 +3,6 @@ package me.iacn.biliroaming
 import android.content.Context
 import android.util.SparseArray
 import android.view.View
-import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
 import de.robv.android.xposed.XposedHelpers.findClass
 import java.io.File
@@ -25,7 +24,7 @@ class BiliBiliPackage private constructor() {
 
     var bangumiApiResponse: Class<*> by Weak { findClass("com.bilibili.bangumi.data.common.api.BangumiApiResponse", mClassLoader) }
     var fastJson: Class<*> by Weak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
-    var bangumiUniformSeason: Class<*> by Weak(::searchBangumiUniformSeason)
+    var bangumiUniformSeason: Class<*> by Weak(::searchBangumiUniformSeasonClass)
     var themeHelper: Class<*> by Weak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
 
     private var mHasModulesInResult = false
@@ -42,10 +41,9 @@ class BiliBiliPackage private constructor() {
         mClassLoader = classLoader
 
         readHookInfo(context)
-        println(mHasModulesInResult)
-        /*if (checkHookInfo()) {
+        if (checkHookInfo()) {
             writeHookInfo(context)
-        }*/
+        }
     }
 
     fun retrofitResponse(): String? {
@@ -69,7 +67,6 @@ class BiliBiliPackage private constructor() {
         return mHasModulesInResult
     }
 
-    //==========================================================
     private fun readHookInfo(context: Context) {
         val hookInfoFile = File(context.cacheDir, HOOK_INFO_FILE_NAME)
         log("Reading hook info: $hookInfoFile")
@@ -95,22 +92,22 @@ class BiliBiliPackage private constructor() {
         var needUpdate = false
 
         if ("class_retrofit_response" !in mHookInfo) {
-            mHookInfo["class_retrofit_response"] = findRetrofitResponseClass()!!
+            mHookInfo["class_retrofit_response"] = searchRetrofitResponseClass()
             needUpdate = true
         }
         if ("class_fastjson" !in mHookInfo) {
-            val fastJsonClass = findFastJsonClass()
+            val fastJsonClass = searchFastJsonClass()
             val notObfuscated = "JSON" == fastJsonClass.simpleName
             mHookInfo["class_fastjson"] = fastJsonClass.name
             mHookInfo["method_fastjson_parse"] = if (notObfuscated) "parseObject" else "a"
             needUpdate = true
         }
         if ("field_color_array" !in mHookInfo) {
-            mHookInfo["field_color_array"] = findColorArrayField()
+            mHookInfo["field_color_array"] = searchColorArrayField()
             needUpdate = true
         }
         if ("class_theme_list_click" !in mHookInfo) {
-            mHookInfo["class_theme_list_click"] = findThemeListClickClass()!!
+            mHookInfo["class_theme_list_click"] = searchThemeListClickClass()
             needUpdate = true
         }
 
@@ -132,42 +129,36 @@ class BiliBiliPackage private constructor() {
         log("Write hook info completed")
     }
 
-    private fun searchBangumiUniformSeason(): Class<*> {
+    private fun searchBangumiUniformSeasonClass(): Class<*> {
         val clazz = findClass("com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason", mClassLoader)
         try {
             clazz.getField("modules")
             mHasModulesInResult = true
         } catch (ignored: NoSuchFieldException) {
-            println(ignored.stackTrace)
         }
         return clazz
     }
-    //==========================================================
 
-    private fun findRetrofitResponseClass(): String? {
-        val methods = bangumiApiResponse.methods
-        for (method in methods) {
+    private fun searchRetrofitResponseClass(): String {
+        for (method in bangumiApiResponse.methods) {
             if ("extractResult" == method.name) {
                 val responseClass = method.parameterTypes[0]
                 return responseClass.name
             }
         }
-        return null
+        return ""
     }
 
-    private fun findFastJsonClass(): Class<*> {
-        val clazz: Class<*>
-        clazz = try {
+    private fun searchFastJsonClass(): Class<*> {
+        return try {
             findClass("com.alibaba.fastjson.JSON", mClassLoader)
         } catch (e: ClassNotFoundError) {
             findClass("com.alibaba.fastjson.a", mClassLoader)
         }
-        return clazz
     }
 
-    private fun findColorArrayField(): String {
-        val fields = themeHelper.declaredFields
-        for (field in fields) {
+    private fun searchColorArrayField(): String {
+        for (field in themeHelper.declaredFields) {
             if (field.type == SparseArray::class.java) {
                 val genericType = field.genericType as ParameterizedType
                 val types = genericType.actualTypeArguments
@@ -179,8 +170,8 @@ class BiliBiliPackage private constructor() {
         return ""
     }
 
-    private fun findThemeListClickClass(): String? {
-        val themeStoreActivityClass = XposedHelpers.findClass("tv.danmaku.bili.ui.theme.ThemeStoreActivity", mClassLoader)
+    private fun searchThemeListClickClass(): String {
+        val themeStoreActivityClass = findClass("tv.danmaku.bili.ui.theme.ThemeStoreActivity", mClassLoader)
         for (innerClass in themeStoreActivityClass.declaredClasses) {
             for (interfaceClass in innerClass.interfaces) {
                 if (interfaceClass == View.OnClickListener::class.java) {
@@ -188,7 +179,7 @@ class BiliBiliPackage private constructor() {
                 }
             }
         }
-        return null
+        return ""
     }
 
     private class Weak(val initializer: () -> Class<*>?) {
