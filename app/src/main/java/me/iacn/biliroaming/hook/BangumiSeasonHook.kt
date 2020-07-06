@@ -25,8 +25,8 @@ import org.json.JSONObject
 class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     private companion object {
-        private const val ID_TYPE_SEASON = 0
-        private const val ID_TYPE_EPISODE = 2
+        private const val TYPE_SEASON_ID = 0
+        private const val TYPE_EPISODE_ID = 2
     }
 
     private val lastSeasonInfo: MutableMap<String, Any?> by lazy { ArrayMap<String, Any?>() }
@@ -42,8 +42,8 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 val paramMap = param.thisObject as MutableMap<*, *>
 
                 val id = when (param.args[1] as Int) {
-                    ID_TYPE_SEASON -> paramMap["season_id"]
-                    ID_TYPE_EPISODE -> "ep${paramMap["ep_id"]}"
+                    TYPE_SEASON_ID -> paramMap["season_id"]
+                    TYPE_EPISODE_ID -> "ep${paramMap["ep_id"]}"
                     else -> return
                 }
 
