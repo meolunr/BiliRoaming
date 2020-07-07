@@ -1,6 +1,5 @@
 package me.iacn.biliroaming.hook
 
-import android.app.Activity
 import android.app.AndroidAppHelper
 import android.content.Context
 import android.content.SharedPreferences
@@ -48,6 +47,10 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
         val primaryColor = getCustomColor()
         colorArray.put(CUSTOM_THEME_ID, generateColorArray(primaryColor))
+
+        val garbNameClass = findClass("tv.danmaku.bili.ui.garb.e", mClassLoader)
+        val garbBundle = getStaticObjectField(garbNameClass, "a") as MutableMap<String, Int>
+        garbBundle["custom"] = CUSTOM_THEME_ID
 
         findAndHookMethod("tv.danmaku.bili.ui.theme.ThemeStoreActivity", mClassLoader, "a",
                 "tv.danmaku.bili.ui.theme.api.BiliSkinList", Boolean::class.java, object : XC_MethodHook() {
@@ -121,7 +124,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         })
 
         // Make sure that not invalidate when user not logging in
-        findAndHookMethod(helperClass, "a", Activity::class.java, XC_MethodReplacement.DO_NOTHING)
+        findAndHookMethod("tv.danmaku.bili.ui.theme.e", mClassLoader, "e", XC_MethodReplacement.DO_NOTHING)
     }
 
     fun insertColorForWebProcess() {
