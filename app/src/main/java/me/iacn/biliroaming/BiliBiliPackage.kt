@@ -4,7 +4,9 @@ import android.content.Context
 import android.util.SparseArray
 import android.view.View
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
+import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.findClass
+import de.robv.android.xposed.XposedHelpers.getStaticObjectField
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -31,6 +33,15 @@ class BiliBiliPackage private constructor() {
     val fastJson: Class<*> by Weak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
     val bangumiUniformSeason: Class<*> by Weak(::searchBangumiUniformSeasonClass)
     val themeHelper: Class<*> by Weak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
+
+    private val accessKeyLambda: Class<*> by Weak {
+        findClass("com.bilibili.bangumi.ui.page.detail.pay.BangumiPayHelperV2\$accessKey\$2", mClassLoader)
+    }
+    val accessKey: String
+        get() {
+            val instance = getStaticObjectField(accessKeyLambda, "INSTANCE")
+            return callMethod(instance, "invoke") as String
+    }
 
     var hasModulesInResult = false
         get() {
