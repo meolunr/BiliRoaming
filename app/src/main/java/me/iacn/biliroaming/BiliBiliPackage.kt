@@ -29,19 +29,15 @@ class BiliBiliPackage private constructor() {
     val colorArray get() = mHookInfo["field_color_array"]
     val themeListClickListener get() = mHookInfo["class_theme_list_click"]
 
-    val bangumiApiResponse: Class<*> by Weak { findClass("com.bilibili.bangumi.data.common.api.BangumiApiResponse", mClassLoader) }
-    val fastJson: Class<*> by Weak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
-    val bangumiUniformSeason: Class<*> by Weak(::searchBangumiUniformSeasonClass)
-    val themeHelper: Class<*> by Weak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
+    val bangumiApiResponse: Class<*> by ClassWeak { findClass("com.bilibili.bangumi.data.common.api.BangumiApiResponse", mClassLoader) }
+    val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
+    val bangumiUniformSeason: Class<*> by ClassWeak(::searchBangumiUniformSeasonClass)
+    val themeHelper: Class<*> by ClassWeak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
 
-    private val accessKeyLambda: Class<*> by Weak {
-        findClass("com.bilibili.bangumi.ui.page.detail.pay.BangumiPayHelperV2\$accessKey\$2", mClassLoader)
+    private val accessKeyInstance by lazy {
+        getStaticObjectField(findClass("com.bilibili.bangumi.ui.page.detail.pay.BangumiPayHelperV2\$accessKey\$2", mClassLoader), "INSTANCE")
     }
-    val accessKey: String
-        get() {
-            val instance = getStaticObjectField(accessKeyLambda, "INSTANCE")
-            return callMethod(instance, "invoke") as String
-    }
+    val accessKey: String get() = callMethod(accessKeyInstance, "invoke") as String
 
     var hasModulesInResult = false
         get() {
@@ -181,7 +177,7 @@ class BiliBiliPackage private constructor() {
         return ""
     }
 
-    private class Weak(val initializer: () -> Class<*>?) {
+    private class ClassWeak(val initializer: () -> Class<*>?) {
         private var weakReference: WeakReference<Class<*>?>? = null
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): Class<*> {
