@@ -28,7 +28,7 @@ object BiliRoamingApi {
         return getContent(url)
     }
 
-    fun getPlayUrl(queryString: String): String = getContent("https://$BILIROAMING_PLAYURL_URL?$queryString")
+    fun getPlayUrl(queryString: String): String = getContent("https://$BILIROAMING_PLAYURL_URL$queryString")
 
     private fun getContent(urlString: String): String {
         val connection = URL(urlString).openConnection() as HttpURLConnection

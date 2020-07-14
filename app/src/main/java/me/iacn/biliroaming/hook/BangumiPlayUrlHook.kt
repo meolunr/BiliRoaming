@@ -30,7 +30,7 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
                 if (!urlString.startsWith("https://api.bilibili.com/pgc/player/api/playurl")) return
 
-                val queryString = urlString.substring(urlString.indexOf("?") + 1)
+                val queryString = urlString.substring(urlString.indexOf("?"))
                 if (queryString.contains("ep_id=")) {
                     val inputStream = param.result as InputStream
                     var content = StreamUtils.getContent(inputStream)
