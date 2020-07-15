@@ -8,6 +8,6 @@ import android.util.Log
  */
 const val BILIBILI_PACKAGENAME = "tv.danmaku.bili"
 
-fun log(message: String) {
-    Log.d("BiliRoaming", message)
-}
+fun Boolean.toIntString() = if (this) "1" else "0"
+
+fun log(message: String) = Log.d("BiliRoaming", message)

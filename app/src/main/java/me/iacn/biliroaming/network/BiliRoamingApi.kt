@@ -2,6 +2,7 @@ package me.iacn.biliroaming.network
 
 import android.net.Uri
 import me.iacn.biliroaming.BuildConfig
+import me.iacn.biliroaming.toIntString
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -22,7 +23,7 @@ object BiliRoamingApi {
             if (accessKey.isNotEmpty()) {
                 appendQueryParameter("access_key", accessKey)
             }
-            appendQueryParameter("use_cache", if (useCache) "1" else "0")
+            appendQueryParameter("use_cache", useCache.toIntString())
             toString()
         }
         return getContent(url)
