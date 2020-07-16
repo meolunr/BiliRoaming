@@ -9,6 +9,7 @@ import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XSharedPreferences
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
+import me.iacn.biliroaming.hook.BangumiDownloadHook
 import me.iacn.biliroaming.hook.BangumiPlayUrlHook
 import me.iacn.biliroaming.hook.BangumiSeasonHook
 import me.iacn.biliroaming.hook.CommentHook
@@ -42,9 +43,11 @@ class XposedInit : IXposedHookLoadPackage {
                 when (lpparam.processName) {
                     "tv.danmaku.bili" -> {
                         log("BiliBili process launched...")
-                        BiliBiliPackage.instance.init(lpparam.classLoader, param.args[0] as Context)
+                        initialize(lpparam.classLoader, param.args[0] as Context)
+
                         BangumiSeasonHook(lpparam.classLoader).startHook()
                         BangumiPlayUrlHook(lpparam.classLoader).startHook()
+                        BangumiDownloadHook(lpparam.classLoader).startHook()
                         CustomThemeHook(lpparam.classLoader).startHook()
                         TeenagersModeHook(lpparam.classLoader).startHook()
                         CommentHook(lpparam.classLoader).startHook()
@@ -55,5 +58,9 @@ class XposedInit : IXposedHookLoadPackage {
                 }
             }
         })
+    }
+
+    private fun initialize(hostClassLoader: ClassLoader, hostContext: Context) {
+        BiliBiliPackage.instance.init(hostClassLoader, hostContext)
     }
 }
