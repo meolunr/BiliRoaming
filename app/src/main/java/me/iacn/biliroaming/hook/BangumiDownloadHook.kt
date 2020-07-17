@@ -1,6 +1,7 @@
 package me.iacn.biliroaming.hook
 
 import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import me.iacn.biliroaming.log
 import me.iacn.biliroaming.network.BiliRoamingApi
@@ -26,26 +27,31 @@ class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 val connection = param.thisObject as HttpURLConnection
                 val urlString = connection.url.toString()
 
-                if (!urlString.startsWith("https://api.bilibili.com/pgc/player/api/playurl")) return
-
-                val queryString = urlString.substring(urlString.indexOf("?"))
-                if (queryString.contains("ep_id=")) {
-                    val inputStream = param.result as InputStream
-                    var content = StreamUtils.getContent(inputStream)
-
-                    if (isLimitWatchingArea(content)) {
-                        content = BiliRoamingApi.getPlayUrl(queryString)
-                        log("Has replaced play url with proxy server")
+                if (urlString.startsWith("https://api.bilibili.com/pgc/player/api/playurl")) {
+                    val queryString = urlString.substring(urlString.indexOf("?"))
+                    if (queryString.contains("ep_id=")) {
+                        onBangumiDownload(param, queryString)
                     }
-                    param.result = ByteArrayInputStream(content.toByteArray())
                 }
             }
         })
     }
 
-    private fun isLimitWatchingArea(jsonText: String): Boolean {
+    private fun onBangumiDownload(param: MethodHookParam, queryString: String) {
+        val inputStream = param.result as InputStream
+        var content = StreamUtils.getContent(inputStream)
+
+        if (isLoadingLimited(content)) {
+            println(queryString)
+            content = BiliRoamingApi.getPlayUrl(queryString)
+            log("Has replaced play url with proxy server")
+        }
+        param.result = ByteArrayInputStream(content.toByteArray())
+    }
+
+    private fun isLoadingLimited(content: String): Boolean {
         return try {
-            val json = JSONObject(jsonText)
+            val json = JSONObject(content)
             val code = json.optInt("code")
             log("Loading play url: code = $code")
             code == -10403
