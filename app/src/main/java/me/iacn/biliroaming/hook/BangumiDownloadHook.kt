@@ -1,5 +1,6 @@
 package me.iacn.biliroaming.hook
 
+import android.net.Uri
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
@@ -17,6 +18,9 @@ import java.net.HttpURLConnection
  * Email meolunr@gmail.com
  */
 class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
+
+    private val loadedCids: MutableSet<Int> by lazy { mutableSetOf() }
+
     override fun startHook() {
 //        if (!XposedInit.sPrefs.getBoolean("allow_download", false)) return
         log("startHook: BangumiDownload")
@@ -42,7 +46,9 @@ class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         var content = StreamUtils.getContent(inputStream)
 
         if (isLoadingLimited(content)) {
-            println(queryString)
+            val cid = Uri.parse(queryString).getQueryParameters("cid").first().toInt()
+            loadedCids.add(cid)
+
             content = BiliRoamingApi.getPlayUrl(queryString)
             log("Has replaced play url with proxy server")
         }
