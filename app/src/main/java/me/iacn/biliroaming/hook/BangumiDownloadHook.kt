@@ -39,6 +39,26 @@ class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 }
             }
         })
+
+        findAndHookMethod("com.bilibili.lib.media.resolver.params.ResolveMediaResourceParams", mClassLoader, "a", JSONObject::class.java, object : XC_MethodHook() {
+            override fun beforeHookedMethod(param: MethodHookParam) {
+                // Benefit from client retry mechanism
+                // This will use forced download on the second request
+                // Avoid impacting the speed of original downloadable bangumi
+                val jsonObject = param.args[0] as JSONObject
+                val fromBangumi = jsonObject.optString("from") == "bangumi"
+
+                if (fromBangumi && jsonObject.optInt("request_from_downloader") == 1) {
+                    jsonObject.optInt("cid").let {
+                        if (it in loadedCids) {
+                            jsonObject.put("request_from_downloader", 0)
+                            loadedCids.remove(it)
+                            log("Forcibly allow bangumi download: cid = $it")
+                        }
+                    }
+                }
+            }
+        })
     }
 
     private fun onBangumiDownload(param: MethodHookParam, queryString: String) {
