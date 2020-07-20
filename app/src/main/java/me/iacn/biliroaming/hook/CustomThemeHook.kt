@@ -124,7 +124,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         })
 
         // Make sure that not invalidate when user not logging in
-        findAndHookMethod("tv.danmaku.bili.ui.theme.e", mClassLoader, "e", XC_MethodReplacement.DO_NOTHING)
+        findAndHookMethod("tv.danmaku.bili.ui.theme.d", mClassLoader, "e", XC_MethodReplacement.DO_NOTHING)
     }
 
     fun insertColorForWebProcess() {
