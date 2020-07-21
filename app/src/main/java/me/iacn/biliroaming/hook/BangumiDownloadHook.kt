@@ -22,7 +22,7 @@ class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     private val loadedCids: MutableSet<Int> by lazy { mutableSetOf() }
 
     override fun startHook() {
-//        if (!XposedInit.sPrefs.getBoolean("allow_download", false)) return
+//        if (!XposedInit.sPrefs.getBoolean("bangumi_download", false)) return
         log("startHook: BangumiDownload")
 
         findAndHookMethod("com.bilibili.lib.okhttp.huc.OkHttpURLConnection", mClassLoader, "getInputStream", object : XC_MethodHook() {

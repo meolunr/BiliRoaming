@@ -1,30 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <SwitchPreference
-        android:key="main_func"
-        android:summary="@string/main_func_summary"
-        android:title="@string/main_func_title" />
+    <PreferenceCategory android:title="@string/bangumi_function">
 
-    <SwitchPreference
-        android:key="custom_theme"
-        android:summary="@string/custom_theme_summary"
-        android:title="@string/custom_theme_title" />
+        <SwitchPreference
+            android:key="main_func"
+            android:summary="@string/main_func_summary"
+            android:title="@string/main_func_title" />
 
-    <SwitchPreference
-        android:key="teenagers_mode_dialog"
-        android:summary="@string/teenagers_mode_dialog_summary"
-        android:title="@string/teenagers_mode_dialog_title" />
+        <SwitchPreference
+            android:dependency="main_func"
+            android:key="bangumi_download"
+            android:summary="@string/bangumi_download_summary"
+            android:title="@string/bangumi_download_title" />
 
-    <SwitchPreference
-        android:key="comment_floor"
-        android:summary="@string/comment_floor_summary"
-        android:title="@string/comment_floor_title" />
+    </PreferenceCategory>
 
-    <SwitchPreference
-        android:key="hide_icon"
-        android:summary="@string/hide_icon_summary"
-        android:title="@string/hide_icon_title" />
+    <PreferenceCategory android:title="@string/other_function">
+
+        <SwitchPreference
+            android:key="custom_theme"
+            android:summary="@string/custom_theme_summary"
+            android:title="@string/custom_theme_title" />
+
+        <SwitchPreference
+            android:key="teenagers_mode_dialog"
+            android:summary="@string/teenagers_mode_dialog_summary"
+            android:title="@string/teenagers_mode_dialog_title" />
+
+        <SwitchPreference
+            android:key="comment_floor"
+            android:summary="@string/comment_floor_summary"
+            android:title="@string/comment_floor_title" />
+
+        <SwitchPreference
+            android:key="hide_icon"
+            android:summary="@string/hide_icon_summary"
+            android:title="@string/hide_icon_title" />
+
+    </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/about">
 

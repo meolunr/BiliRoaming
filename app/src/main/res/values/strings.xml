@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">哔哩漫游</string>
+    <string name="app_name">BiliRoaming</string>
     <string name="xposed_description">解锁B站港澳台番剧限制</string>
     <string name="about">关于</string>
     <string name="version">版本</string>
@@ -18,4 +18,8 @@
     <string name="teenagers_mode_dialog_summary">仍可从侧滑菜单进入青少年模式</string>
     <string name="comment_floor_title">评论区楼层显示</string>
     <string name="comment_floor_summary">恢复以前版本的评论楼层显示</string>
+    <string name="bangumi_download_title">允许番剧缓存</string>
+    <string name="bangumi_download_summary">允许缓存其他有观看权限的番剧</string>
+    <string name="bangumi_function">番剧相关</string>
+    <string name="other_function">其他功能</string>
 </resources>
