@@ -10,6 +10,7 @@ import de.robv.android.xposed.XposedHelpers.findClass
 import de.robv.android.xposed.XposedHelpers.getBooleanField
 import de.robv.android.xposed.XposedHelpers.getIntField
 import de.robv.android.xposed.XposedHelpers.getObjectField
+import de.robv.android.xposed.XposedHelpers.setBooleanField
 import de.robv.android.xposed.XposedHelpers.setIntField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import me.iacn.biliroaming.BiliBiliPackage
@@ -35,8 +36,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         if (!XposedInit.sPrefs.getBoolean("main_func", false)) return
         log("startHook: BangumiSeason")
 
-        val paramsMapClass = findClass("com.bilibili.bangumi.data.page.detail." +
-                "BangumiDetailApiService\$UniformSeasonParamsMap", mClassLoader)
+        val paramsMapClass = findClass("com.bilibili.bangumi.data.page.detail.BangumiDetailApiService\$UniformSeasonParamsMap", mClassLoader)
         XposedBridge.hookAllConstructors(paramsMapClass, object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 val paramMap = param.thisObject as MutableMap<*, *>
@@ -53,12 +53,10 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             }
         })
 
-        val responseClass = findClass(BiliBiliPackage.instance.retrofitResponse, mClassLoader)
-        XposedBridge.hookAllConstructors(responseClass, object : XC_MethodHook() {
+        XposedBridge.hookAllConstructors(findClass(BiliBiliPackage.instance.retrofitResponse, mClassLoader), object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
-                val biliPackage = BiliBiliPackage.instance
+                val bangumiApiResponse = BiliBiliPackage.instance.bangumiApiResponse
                 val body = param.args[1]
-                val bangumiApiResponse = biliPackage.bangumiApiResponse
 
                 // Filter non-bangumi responses
                 // If it isn't bangumi, the type variable will not exist in this map
@@ -67,43 +65,13 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 val result = getObjectField(body, "result")
                 // Filter normal bangumi and other responses
                 if (isBangumiWithWatchPermission(getIntField(body, "code"), result)) {
+                    onBangumiResponse(result)
                     lastSeasonInfo.clear()
-                    return
+                } else {
+                    log("Found a restricted bangumi: $lastSeasonInfo")
+                    onLimitedBangumiResponse(body, result)
+                    lastSeasonInfo.clear()
                 }
-
-                val useCache = result != null
-                val content = getSeasonFromProxyServer(useCache)
-                val contentJson = JSONObject(content)
-                val code = contentJson.optInt("code")
-                log("Get new season information from proxy server: code = $code, useCache = $useCache")
-
-                if (code == 0) {
-                    val resultJson = contentJson.optJSONObject("result")
-                    val beanClass = biliPackage.bangumiUniformSeason
-                    val newResult = callStaticMethod(biliPackage.fastJson, biliPackage.fastJsonParse, resultJson!!.toString(), beanClass)
-
-                    if (useCache) {
-                        // Replace only episodes and rights
-                        // Remain user information, such as follow status, watch progress, etc.
-                        val newRights = getObjectField(newResult, "rights")
-                        if (!getBooleanField(newRights, "areaLimit")) {
-                            val newEpisodes = getObjectField(newResult, "episodes")
-                            setObjectField(result, "rights", newRights)
-                            setObjectField(result, "episodes", newEpisodes)
-                            setObjectField(result, "seasonLimit", null)
-
-                            if (biliPackage.hasModulesInResult) {
-                                val newModules = getObjectField(newResult, "modules")
-                                setObjectField(result, "modules", newModules)
-                            }
-                        }
-                    } else {
-                        setIntField(body, "code", 0)
-                        setObjectField(body, "result", newResult)
-                    }
-                }
-
-                lastSeasonInfo.clear()
             }
         })
 
@@ -121,6 +89,45 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         findAndHookMethod(videoCardClass, "getCommentJumpUrl", urlHook)
     }
 
+    private fun onBangumiResponse(result: Any?) {
+        println(result)
+    }
+
+    private fun onLimitedBangumiResponse(body: Any?, result: Any?) {
+        val biliPackage = BiliBiliPackage.instance
+        val useCache = result != null
+
+        val contentJson = JSONObject(getSeasonFromProxyServer(useCache))
+        val code = contentJson.optInt("code")
+        log("Get new season information from proxy server: code = $code, useCache = $useCache")
+
+        if (code == 0) {
+            val resultJson = contentJson.optJSONObject("result")
+            val beanClass = biliPackage.bangumiUniformSeason
+            val newResult = callStaticMethod(biliPackage.fastJson, biliPackage.fastJsonParse, resultJson!!.toString(), beanClass)
+
+            if (useCache) {
+                // Replace only episodes and rights
+                // Remain user information, such as follow status, watch progress, etc.
+                val newRights = getObjectField(newResult, "rights")
+                if (!getBooleanField(newRights, "areaLimit")) {
+                    val newEpisodes = getObjectField(newResult, "episodes")
+                    setObjectField(result, "rights", newRights)
+                    setObjectField(result, "episodes", newEpisodes)
+                    setObjectField(result, "seasonLimit", null)
+
+                    if (biliPackage.hasModulesInResult) {
+                        val newModules = getObjectField(newResult, "modules")
+                        setObjectField(result, "modules", newModules)
+                    }
+                }
+            } else {
+                setIntField(body, "code", 0)
+                setObjectField(body, "result", newResult)
+            }
+        }
+    }
+
     private fun isBangumiWithWatchPermission(code: Int, result: Any?): Boolean {
         log("BangumiApiResponse: code = $code, result = $result")
         result?.let {
@@ -128,6 +135,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             if (bangumiSeasonClass.isInstance(it)) {
                 val rights = getObjectField(result, "rights")
                 val areaLimit = getBooleanField(rights, "areaLimit")
+                setBooleanField(rights, "allowDownload", true)
                 return !areaLimit
             }
         }
@@ -135,7 +143,6 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     }
 
     private fun getSeasonFromProxyServer(useCache: Boolean): String {
-        log("Found a restricted bangumi: $lastSeasonInfo")
         val id = lastSeasonInfo["id"] as String
         val accessKey = lastSeasonInfo["access_key"] as String
         return BiliRoamingApi.getSeason(id, accessKey, useCache)
