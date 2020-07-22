@@ -1,8 +1,6 @@
 package me.iacn.biliroaming.hook
 
-import android.app.AndroidAppHelper
 import android.content.Context
-import android.content.SharedPreferences
 import android.graphics.Color
 import android.util.SparseArray
 import android.view.View
@@ -19,7 +17,7 @@ import de.robv.android.xposed.XposedHelpers.setIntField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import me.iacn.biliroaming.BiliBiliPackage
 import me.iacn.biliroaming.ColorChooseDialog
-import me.iacn.biliroaming.XposedInit
+import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 
 /**
@@ -30,7 +28,6 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     companion object {
         private const val CUSTOM_THEME_ID = 114514  // ん？
-        private const val CUSTOM_COLOR_KEY = "biliroaming_custom_color"
 
         // Kotlin does not natively support negative values
         // See: https://youtrack.jetbrains.com/issue/KT-2780
@@ -38,14 +35,14 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     }
 
     override fun startHook() {
-        if (!XposedInit.sPrefs.getBoolean("custom_theme", false)) return
+        if (!ConfigManager.instance.enableCustomTheme()) return
         log("startHook: CustomTheme")
 
         val biliPackage = BiliBiliPackage.instance
         val helperClass = biliPackage.themeHelper
         val colorArray = getStaticObjectField(helperClass, biliPackage.colorArray) as SparseArray<IntArray>
 
-        val primaryColor = getCustomColor()
+        val primaryColor = ConfigManager.instance.getCustomColor(DEFAULT_CUSTOM_COLOR)
         colorArray.put(CUSTOM_THEME_ID, generateColorArray(primaryColor))
 
         val garbNameClass = findClass("tv.danmaku.bili.ui.garb.e", mClassLoader)
@@ -83,7 +80,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 if (mId == CUSTOM_THEME_ID || mId == -1) {
                     log("Custom theme item has been clicked")
 
-                    val colorDialog = ColorChooseDialog(view.context, getCustomColor())
+                    val colorDialog = ColorChooseDialog(view.context, ConfigManager.instance.getCustomColor(DEFAULT_CUSTOM_COLOR))
                     colorDialog.setPositiveButton("确定") { _, _ ->
                         val color = colorDialog.getColor()
                         val colors = generateColorArray(color)
@@ -97,7 +94,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         val newId = if (mId == CUSTOM_THEME_ID) -1 else CUSTOM_THEME_ID
                         setIntField(biliSkin, "mId", newId)
 
-                        putCustomColor(color)
+                        ConfigManager.instance.putCustomColor(color)
                         log("Update new color: mId = $newId, color = ${String.format("0x%06X", 0xFFFFFF and color)}")
 
                         try {
@@ -128,11 +125,11 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     }
 
     fun insertColorForWebProcess() {
-        if (!XposedInit.sPrefs.getBoolean("custom_theme", false)) return
+        if (ConfigManager.instance.enableCustomTheme()) return
 
         val helperClass = findClass("com.bilibili.column.helper.k", mClassLoader)
         val colorArray = getStaticObjectField(helperClass, "l") as SparseArray<IntArray>
-        val primaryColor = getCustomColor()
+        val primaryColor = ConfigManager.instance.getCustomColor(DEFAULT_CUSTOM_COLOR)
         colorArray.put(CUSTOM_THEME_ID, generateColorArray(primaryColor))
     }
 
@@ -166,13 +163,5 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         colors[3] = -0x4c000000 or 0xFFFFFF and colors[1]
 
         return colors
-    }
-
-    private fun getCustomColor(): Int = getBiliPrefs().getInt(CUSTOM_COLOR_KEY, DEFAULT_CUSTOM_COLOR)
-
-    private fun putCustomColor(color: Int) = getBiliPrefs().edit().putInt(CUSTOM_COLOR_KEY, color).apply()
-
-    private fun getBiliPrefs(): SharedPreferences {
-        return AndroidAppHelper.currentApplication().getSharedPreferences("bili_preference", Context.MODE_PRIVATE)
     }
 }

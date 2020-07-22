@@ -6,7 +6,6 @@ import android.content.Context
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
-import de.robv.android.xposed.XSharedPreferences
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import me.iacn.biliroaming.hook.BangumiDownloadHook
@@ -22,10 +21,6 @@ import me.iacn.biliroaming.hook.TeenagersModeHook
  */
 class XposedInit : IXposedHookLoadPackage {
 
-    companion object {
-        lateinit var sPrefs: XSharedPreferences
-    }
-
     override fun handleLoadPackage(lpparam: LoadPackageParam) {
         if (BuildConfig.APPLICATION_ID == lpparam.packageName) {
             findAndHookMethod(MainActivity.Companion::class.java.name, lpparam.classLoader,
@@ -33,8 +28,6 @@ class XposedInit : IXposedHookLoadPackage {
         }
 
         if (BILIBILI_PACKAGENAME != lpparam.packageName) return
-
-        sPrefs = XSharedPreferences(BuildConfig.APPLICATION_ID)
 
         findAndHookMethod(Instrumentation::class.java, "callApplicationOnCreate",
                 Application::class.java, object : XC_MethodHook() {
@@ -53,6 +46,7 @@ class XposedInit : IXposedHookLoadPackage {
                         CommentHook(lpparam.classLoader).startHook()
                     }
                     "tv.danmaku.bili:web" -> {
+                        ConfigManager.instance.init()
                         CustomThemeHook(lpparam.classLoader).insertColorForWebProcess()
                     }
                 }
@@ -62,5 +56,6 @@ class XposedInit : IXposedHookLoadPackage {
 
     private fun initialize(hostClassLoader: ClassLoader, hostContext: Context) {
         BiliBiliPackage.instance.init(hostClassLoader, hostContext)
+        ConfigManager.instance.init()
     }
 }

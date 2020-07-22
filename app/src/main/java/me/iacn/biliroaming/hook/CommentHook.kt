@@ -4,7 +4,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.setIntField
-import me.iacn.biliroaming.XposedInit
+import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 
 /**
@@ -14,7 +14,7 @@ import me.iacn.biliroaming.log
 class CommentHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
-        if (!XposedInit.sPrefs.getBoolean("comment_floor", false)) return
+        if (!ConfigManager.instance.enableCommentFloor()) return
         log("startHook: Comment")
 
         val floorHook: XC_MethodHook = object : XC_MethodHook() {

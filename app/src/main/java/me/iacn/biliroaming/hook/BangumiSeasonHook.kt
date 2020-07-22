@@ -14,7 +14,7 @@ import de.robv.android.xposed.XposedHelpers.setBooleanField
 import de.robv.android.xposed.XposedHelpers.setIntField
 import de.robv.android.xposed.XposedHelpers.setObjectField
 import me.iacn.biliroaming.BiliBiliPackage
-import me.iacn.biliroaming.XposedInit
+import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 import me.iacn.biliroaming.network.BiliRoamingApi
 import org.json.JSONObject
@@ -33,7 +33,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     private val lastSeasonInfo: MutableMap<String, Any?> by lazy { ArrayMap<String, Any?>() }
 
     override fun startHook() {
-        if (!XposedInit.sPrefs.getBoolean("main_func", false)) return
+        if (!ConfigManager.instance.enableMainFunc()) return
         log("startHook: BangumiSeason")
 
         val paramsMapClass = findClass("com.bilibili.bangumi.data.page.detail.BangumiDetailApiService\$UniformSeasonParamsMap", mClassLoader)

@@ -4,6 +4,7 @@ import android.net.Uri
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
+import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 import me.iacn.biliroaming.network.BiliRoamingApi
 import me.iacn.biliroaming.network.StreamUtils
@@ -22,23 +23,8 @@ class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     private val loadedCids: MutableSet<Int> by lazy { mutableSetOf() }
 
     override fun startHook() {
-//        if (!XposedInit.sPrefs.getBoolean("bangumi_download", false)) return
+        if (!ConfigManager.instance.enableBangumiDownload()) return
         log("startHook: BangumiDownload")
-
-        findAndHookMethod("com.bilibili.lib.okhttp.huc.OkHttpURLConnection", mClassLoader, "getInputStream", object : XC_MethodHook() {
-            override fun afterHookedMethod(param: MethodHookParam) {
-                // Found from "b.ecy" in version 5.39.1
-                val connection = param.thisObject as HttpURLConnection
-                val urlString = connection.url.toString()
-
-                if (urlString.startsWith("https://api.bilibili.com/pgc/player/api/playurl")) {
-                    val queryString = urlString.substring(urlString.indexOf("?"))
-                    if (queryString.contains("ep_id=")) {
-                        onBangumiDownload(param, queryString)
-                    }
-                }
-            }
-        })
 
         findAndHookMethod("com.bilibili.lib.media.resolver.params.ResolveMediaResourceParams", mClassLoader, "a", JSONObject::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
@@ -55,6 +41,21 @@ class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                             loadedCids.remove(it)
                             log("Forcibly allow bangumi download: cid = $it")
                         }
+                    }
+                }
+            }
+        })
+
+        findAndHookMethod("com.bilibili.lib.okhttp.huc.OkHttpURLConnection", mClassLoader, "getInputStream", object : XC_MethodHook() {
+            override fun afterHookedMethod(param: MethodHookParam) {
+                // Found from "b.ecy" in version 5.39.1
+                val connection = param.thisObject as HttpURLConnection
+                val urlString = connection.url.toString()
+
+                if (urlString.startsWith("https://api.bilibili.com/pgc/player/api/playurl")) {
+                    val queryString = urlString.substring(urlString.indexOf("?"))
+                    if (queryString.contains("ep_id=")) {
+                        onBangumiDownload(param, queryString)
                     }
                 }
             }

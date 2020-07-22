@@ -4,7 +4,7 @@ import android.app.Activity
 import android.os.Bundle
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
-import me.iacn.biliroaming.XposedInit
+import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 
 /**
@@ -14,7 +14,7 @@ import me.iacn.biliroaming.log
 class TeenagersModeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
-        if (!XposedInit.sPrefs.getBoolean("teenagers_mode_dialog", false)) return
+        if (!ConfigManager.instance.enableTeenagersModeDialog()) return
         log("startHook: TeenagersMode")
 
         findAndHookMethod("com.bilibili.teenagersmode.ui.TeenagersModeDialogActivity",
