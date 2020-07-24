@@ -45,6 +45,7 @@ dependencies {
     implementation 'com.github.iAcn:EditColorHelper:v1.1'
     compileOnly 'de.robv.android.xposed:api:82'
     compileOnly 'de.robv.android.xposed:api:82:sources'
+    compileOnly project(':stub')
 }
 
 afterEvaluate {
