@@ -14,6 +14,7 @@ import me.iacn.biliroaming.hook.BangumiSeasonHook
 import me.iacn.biliroaming.hook.CommentHook
 import me.iacn.biliroaming.hook.CustomThemeHook
 import me.iacn.biliroaming.hook.TeenagersModeHook
+import me.iacn.biliroaming.inject.ClassLoaderInjector
 
 /**
  * Created by iAcn on 2019/3/24
@@ -55,6 +56,7 @@ class XposedInit : IXposedHookLoadPackage {
     }
 
     private fun initialize(hostClassLoader: ClassLoader, hostContext: Context) {
+        ClassLoaderInjector.setupWithHost(hostClassLoader)
         BiliBiliPackage.instance.init(hostClassLoader, hostContext)
         ConfigManager.instance.init()
     }
