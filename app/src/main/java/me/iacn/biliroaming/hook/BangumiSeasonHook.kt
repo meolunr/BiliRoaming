@@ -1,6 +1,7 @@
 package me.iacn.biliroaming.hook
 
 import android.util.ArrayMap
+import com.bilibili.bangumi.data.common.api.BangumiApiResponse
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers.callMethod
@@ -55,12 +56,10 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
         XposedBridge.hookAllConstructors(findClass(BiliBiliPackage.instance.retrofitResponse, mClassLoader), object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
-                val bangumiApiResponse = BiliBiliPackage.instance.bangumiApiResponse
                 val body = param.args[1]
-
                 // Filter non-bangumi responses
                 // If it isn't bangumi, the type variable will not exist in this map
-                if (!bangumiApiResponse.isInstance(body) or !lastSeasonInfo.containsKey("id")) return
+                if ((body !is BangumiApiResponse) or ("id" !in lastSeasonInfo)) return
 
                 val result = getObjectField(body, "result")
                 // Filter normal bangumi and other responses

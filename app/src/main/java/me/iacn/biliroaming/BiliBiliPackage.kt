@@ -3,6 +3,7 @@ package me.iacn.biliroaming
 import android.content.Context
 import android.util.SparseArray
 import android.view.View
+import com.bilibili.bangumi.data.common.api.BangumiApiResponse
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
 import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.findClass
@@ -29,7 +30,6 @@ class BiliBiliPackage private constructor() {
     val colorArray get() = mHookInfo["field_color_array"]
     val themeListClickListener get() = mHookInfo["class_theme_list_click"]
 
-    val bangumiApiResponse: Class<*> by ClassWeak { findClass("com.bilibili.bangumi.data.common.api.BangumiApiResponse", mClassLoader) }
     val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
     val bangumiUniformSeason: Class<*> by ClassWeak(::searchBangumiUniformSeasonClass)
     val themeHelper: Class<*> by ClassWeak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
@@ -135,7 +135,7 @@ class BiliBiliPackage private constructor() {
     }
 
     private fun searchRetrofitResponseClass(): String {
-        for (method in bangumiApiResponse.methods) {
+        for (method in BangumiApiResponse::class.java.methods) {
             if ("extractResult" == method.name) {
                 val responseClass = method.parameterTypes[0]
                 return responseClass.name
