@@ -36,7 +36,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!ConfigManager.instance.enableCustomTheme()) return
-        log("startHook: CustomTheme")
+        log("Start hook: CustomTheme")
 
         val biliPackage = BiliBiliPackage.instance
         val helperClass = biliPackage.themeHelper

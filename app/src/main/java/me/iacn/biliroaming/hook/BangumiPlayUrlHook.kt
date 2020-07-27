@@ -17,7 +17,7 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!ConfigManager.instance.enableMainFunc()) return
-        log("startHook: BangumiPlayUrl")
+        log("Start hook: BangumiPlayUrl")
 
         findAndHookMethod("com.bapis.bilibili.pgc.gateway.player.v1.PlayURLMoss", mClassLoader, "playView",
                 "com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReq", object : XC_MethodHook() {

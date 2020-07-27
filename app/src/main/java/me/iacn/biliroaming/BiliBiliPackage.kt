@@ -67,7 +67,7 @@ class BiliBiliPackage private constructor() {
 
     private fun readHookInfo(context: Context) {
         val hookInfoFile = File(context.cacheDir, HOOK_INFO_FILE_NAME)
-        log("Reading hook info: $hookInfoFile")
+        log("Read hook info: $hookInfoFile")
         val startTime = System.currentTimeMillis()
 
         if (hookInfoFile.isFile && hookInfoFile.canRead()) {
@@ -80,7 +80,7 @@ class BiliBiliPackage private constructor() {
         }
 
         val endTime = System.currentTimeMillis()
-        log("Read hook info completed: take ${endTime - startTime} ms")
+        log("Reading hook info is completed, take ${endTime - startTime} ms")
     }
 
     /**
@@ -109,7 +109,7 @@ class BiliBiliPackage private constructor() {
             needUpdate = true
         }
 
-        log("Check hook info completed: needUpdate = $needUpdate")
+        log("Check hook info is completed: needUpdate = $needUpdate")
         return needUpdate
     }
 
@@ -124,7 +124,7 @@ class BiliBiliPackage private constructor() {
             it.writeObject(mHookInfo)
             it.flush()
         }
-        log("Write hook info completed")
+        log("Writing hook info is completed")
     }
 
     private fun searchRetrofitResponseClass(): String {

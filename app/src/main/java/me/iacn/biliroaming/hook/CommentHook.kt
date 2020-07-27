@@ -15,7 +15,7 @@ class CommentHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!ConfigManager.instance.enableCommentFloor()) return
-        log("startHook: Comment")
+        log("Start hook: Comment")
 
         val floorHook: XC_MethodHook = object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {

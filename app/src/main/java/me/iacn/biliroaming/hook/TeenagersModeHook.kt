@@ -15,7 +15,7 @@ class TeenagersModeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!ConfigManager.instance.enableTeenagersModeDialog()) return
-        log("startHook: TeenagersMode")
+        log("Start hook: TeenagersMode")
 
         findAndHookMethod("com.bilibili.teenagersmode.ui.TeenagersModeDialogActivity",
                 mClassLoader, "onCreate", Bundle::class.java, object : XC_MethodHook() {

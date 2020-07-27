@@ -31,7 +31,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!ConfigManager.instance.enableMainFunc()) return
-        log("startHook: BangumiSeason")
+        log("Start hook: BangumiSeason")
 
         val paramsMapClass = findClass("com.bilibili.bangumi.data.page.detail.BangumiDetailApiService\$UniformSeasonParamsMap", mClassLoader)
         XposedBridge.hookAllConstructors(paramsMapClass, object : XC_MethodHook() {

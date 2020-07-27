@@ -24,7 +24,7 @@ class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!ConfigManager.instance.enableBangumiDownload()) return
-        log("startHook: BangumiDownload")
+        log("Start hook: BangumiDownload")
 
         findAndHookMethod("com.bilibili.lib.media.resolver.params.ResolveMediaResourceParams", mClassLoader, "a", JSONObject::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
