@@ -1,8 +1,7 @@
 package com.bilibili.bangumi.data.common.api;
 
-public class BangumiApiResponse {
+import com.bilibili.okretro.BaseResponse;
 
-    public BangumiApiResponse() {
-        throw new RuntimeException("Stub!");
-    }
+public class BangumiApiResponse extends BaseResponse {
+    public Object result;
 }

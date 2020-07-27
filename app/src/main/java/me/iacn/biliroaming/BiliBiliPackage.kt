@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.SparseArray
 import android.view.View
 import com.bilibili.bangumi.data.common.api.BangumiApiResponse
+import com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
 import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.findClass
@@ -31,7 +32,6 @@ class BiliBiliPackage private constructor() {
     val themeListClickListener get() = mHookInfo["class_theme_list_click"]
 
     val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
-    val bangumiUniformSeason: Class<*> by ClassWeak(::searchBangumiUniformSeasonClass)
     val themeHelper: Class<*> by ClassWeak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
 
     private val accessKeyInstance by lazy {
@@ -39,11 +39,14 @@ class BiliBiliPackage private constructor() {
     }
     val accessKey: String get() = callMethod(accessKeyInstance, "invoke") as String
 
-    var hasModulesInResult = false
-        get() {
-            log("hasModulesInResult: $field")
-            return field
+    val hasModulesInResult: Boolean by lazy {
+        try {
+            BangumiUniformSeason::class.java.getField("modules")
+            true
+        } catch (ignored: NoSuchFieldException) {
+            false
         }
+    }
 
     companion object {
         private const val HOOK_INFO_FILE_NAME = "hookinfo.dat"
@@ -122,16 +125,6 @@ class BiliBiliPackage private constructor() {
             it.flush()
         }
         log("Write hook info completed")
-    }
-
-    private fun searchBangumiUniformSeasonClass(): Class<*> {
-        val clazz = findClass("com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason", mClassLoader)
-        try {
-            clazz.getField("modules")
-            hasModulesInResult = true
-        } catch (ignored: NoSuchFieldException) {
-        }
-        return clazz
     }
 
     private fun searchRetrofitResponseClass(): String {
