@@ -15,6 +15,7 @@ import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 import me.iacn.biliroaming.network.BiliRoamingApi
 import org.json.JSONObject
+import com.alibaba.fastjson.JSONObject as FastJsonObject
 
 /**
  * Created by iAcn on 2019/3/27
@@ -60,7 +61,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
                 // Filter normal bangumi and other responses
                 if (isBangumiWithWatchPermission(body)) {
-                    onBangumiResponse(body)
+                    setBangumiDownload(body.result as BangumiUniformSeason)
                 } else {
                     log("Found a restricted bangumi: $lastSeasonInfo")
                     onLimitedBangumiResponse(body)
@@ -81,10 +82,6 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         val videoCardClass = findClass("com.bilibili.bplus.followingcard.api.entity.cardBean.VideoCard", mClassLoader)
         findAndHookMethod(videoCardClass, "getJumpUrl", urlHook)
         findAndHookMethod(videoCardClass, "getCommentJumpUrl", urlHook)
-    }
-
-    private fun onBangumiResponse(body: BangumiApiResponse) {
-        println(body)
     }
 
     private fun onLimitedBangumiResponse(body: BangumiApiResponse) {
@@ -116,15 +113,33 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 body.code = 0
                 body.result = newResult
             }
+            setBangumiDownload(body.result as BangumiUniformSeason)
+        }
+    }
+
+    private fun setBangumiDownload(result: BangumiUniformSeason) {
+        if (!ConfigManager.instance.enableBangumiDownload()) return
+
+        result.rights.allowDownload = true
+
+        if (!BiliBiliPackage.instance.hasModulesInResult) return
+
+        for (module in result.modules) {
+            val data = getObjectField(module, "data") as FastJsonObject?
+            data?.getJSONArray("episodes")?.let {
+                // It's positive
+                for (i in 0 until it.size()) {
+                    val rights = it.getJSONObject(i).getJSONObject("rights")
+                    rights.put("allow_download", 1)
+                }
+            }
         }
     }
 
     private fun isBangumiWithWatchPermission(body: BangumiApiResponse): Boolean {
         log("BangumiApiResponse: code = $body.code, result = $body.result")
-        body.result?.takeIf { it is BangumiUniformSeason }?.let {
-            it as BangumiUniformSeason
-            it.rights.allowDownload = true
-            return !it.rights.areaLimit
+        if (body.result is BangumiUniformSeason) {
+            return !(body.result as BangumiUniformSeason).rights.areaLimit
         }
         return body.code != -404
     }
