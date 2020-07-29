@@ -9,6 +9,7 @@ import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
 import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.findClass
 import de.robv.android.xposed.XposedHelpers.getStaticObjectField
+import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -30,6 +31,7 @@ class BiliBiliPackage private constructor() {
     val fastJsonParse get() = mHookInfo["method_fastjson_parse"]
     val colorArray get() = mHookInfo["field_color_array"]
     val themeListClickListener get() = mHookInfo["class_theme_list_click"]
+    val resolveRequestParams get() = mHookInfo["method_resolve_request_params"]
 
     val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
     val themeHelper: Class<*> by ClassWeak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
@@ -108,6 +110,10 @@ class BiliBiliPackage private constructor() {
             mHookInfo["class_theme_list_click"] = searchThemeListClickClass()
             needUpdate = true
         }
+        if ("method_resolve_request_params" !in mHookInfo) {
+            mHookInfo["method_resolve_request_params"] = searchResolveRequestParamsMethod()
+            needUpdate = true
+        }
 
         log("Check hook info is completed: needUpdate = $needUpdate")
         return needUpdate
@@ -165,6 +171,17 @@ class BiliBiliPackage private constructor() {
                 if (interfaceClass == View.OnClickListener::class.java) {
                     return innerClass.name
                 }
+            }
+        }
+        return ""
+    }
+
+    private fun searchResolveRequestParamsMethod(): String {
+        val resolveParamsClass = findClass("com.bilibili.lib.media.resolver.params.ResolveMediaResourceParams", mClassLoader)
+        for (method in resolveParamsClass.declaredMethods) {
+            val parameterTypes = method.parameterTypes
+            if (parameterTypes.size == 1 && parameterTypes[0] == JSONObject::class.java) {
+                return method.name
             }
         }
         return ""

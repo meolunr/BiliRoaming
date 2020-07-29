@@ -4,6 +4,7 @@ import android.net.Uri
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
+import me.iacn.biliroaming.BiliBiliPackage
 import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 import me.iacn.biliroaming.network.BiliRoamingApi
@@ -26,7 +27,7 @@ class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         if (!ConfigManager.instance.enableBangumiDownload()) return
         log("Start hook: BangumiDownload")
 
-        findAndHookMethod("com.bilibili.lib.media.resolver.params.ResolveMediaResourceParams", mClassLoader, "a", JSONObject::class.java, object : XC_MethodHook() {
+        findAndHookMethod("com.bilibili.lib.media.resolver.params.ResolveMediaResourceParams", mClassLoader, BiliBiliPackage.instance.resolveRequestParams, JSONObject::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 // Benefit from client retry mechanism
                 // This will use forced download on the second request
