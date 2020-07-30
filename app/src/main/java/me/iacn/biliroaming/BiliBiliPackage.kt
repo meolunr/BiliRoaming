@@ -34,7 +34,7 @@ class BiliBiliPackage private constructor() {
     val resolveRequestParams get() = mHookInfo["method_resolve_request_params"]
 
     val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
-    val themeHelper: Class<*> by ClassWeak { findClass("tv.danmaku.bili.ui.theme.a", mClassLoader) }
+    val themeHelper: Class<*> by ClassWeak { findClass("tv.danmaku.bili.ui.theme.g", mClassLoader) }
 
     private val accessKeyInstance by lazy {
         getStaticObjectField(findClass("com.bilibili.bangumi.ui.page.detail.pay.BangumiPayHelperV2\$accessKey\$2", mClassLoader), "INSTANCE")
@@ -89,31 +89,27 @@ class BiliBiliPackage private constructor() {
      * @return Whether to update the serialization file.
      */
     private fun checkHookInfo(): Boolean {
-        var needUpdate = false
+        val needUpdate = mHookInfo.searchIfAbsent("class_retrofit_response") {
+            searchRetrofitResponseClass()
 
-        if ("class_retrofit_response" !in mHookInfo) {
-            mHookInfo["class_retrofit_response"] = searchRetrofitResponseClass()
-            needUpdate = true
-        }
-        if ("class_fastjson" !in mHookInfo) {
+        } or mHookInfo.searchIfAbsent("class_fastjson") {
             val fastJsonClass = searchFastJsonClass()
             val notObfuscated = "JSON" == fastJsonClass.simpleName
-            mHookInfo["class_fastjson"] = fastJsonClass.name
             mHookInfo["method_fastjson_parse"] = if (notObfuscated) "parseObject" else "a"
-            needUpdate = true
+            fastJsonClass.name
+
+        } or mHookInfo.searchIfAbsent("field_color_array") {
+            searchColorArrayField()
+
+        } or mHookInfo.searchIfAbsent("class_theme_list_click") {
+            searchThemeListClickClass()
+
+        } or mHookInfo.searchIfAbsent("method_resolve_request_params") {
+            searchResolveRequestParamsMethod()
         }
-        if ("field_color_array" !in mHookInfo) {
-            mHookInfo["field_color_array"] = searchColorArrayField()
-            needUpdate = true
-        }
-        if ("class_theme_list_click" !in mHookInfo) {
-            mHookInfo["class_theme_list_click"] = searchThemeListClickClass()
-            needUpdate = true
-        }
-        if ("method_resolve_request_params" !in mHookInfo) {
-            mHookInfo["method_resolve_request_params"] = searchResolveRequestParamsMethod()
-            needUpdate = true
-        }
+
+        println("needUpdate = $needUpdate")
+        println(mHookInfo)
 
         log("Check hook info is completed: needUpdate = $needUpdate")
         return needUpdate
