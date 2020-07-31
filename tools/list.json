@@ -1,28 +1,22 @@
 {
   "root": [
+    "J",
     "android",
     "androidx",
     "bolts",
-    "butterknife",
     "c",
+    "c3",
     "cmbapi",
     "cn",
-    "io",
-    "kotlin",
-    "kotlinx",
-    "master",
-    "okio",
-    "org",
-    "rx",
-    "u",
-    "versa",
-    "view",
     {
       "com": [
         "adobe",
         "airbnb",
-        "alibaba",
-        "aliott",
+        {
+          "alibaba": [
+            "android"
+          ]
+        },
         "alipay",
         "asus",
         "bigkoo",
@@ -65,6 +59,31 @@
         "yalantis",
         "zui"
       ]
-    }
+    },
+    "e3",
+    "h",
+    "h3",
+    "i3",
+    "io",
+    "k",
+    "kotlin",
+    "kotlinx",
+    "master",
+    "o3",
+    "okio",
+    "org",
+    "retrofit2",
+    "rx",
+    {
+      "tv": [
+        "cjump"
+      ]
+    },
+    "u",
+    "versa",
+    "view",
+    "x2",
+    "y1",
+    "z2"
   ]
 }
