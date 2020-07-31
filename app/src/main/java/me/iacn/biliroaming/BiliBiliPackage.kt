@@ -108,9 +108,6 @@ class BiliBiliPackage private constructor() {
             searchResolveRequestParamsMethod()
         }
 
-        println("needUpdate = $needUpdate")
-        println(mHookInfo)
-
         log("Check hook info is completed: needUpdate = $needUpdate")
         return needUpdate
     }
