@@ -23,11 +23,6 @@ import com.alibaba.fastjson.JSONObject as FastJsonObject
  */
 class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
-    private companion object {
-        private const val TYPE_SEASON_ID = 0
-        private const val TYPE_EPISODE_ID = 2
-    }
-
     private val lastSeasonInfo: MutableMap<String, Any?> by lazy { ArrayMap<String, Any?>() }
 
     override fun startHook() {
@@ -39,9 +34,9 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             override fun afterHookedMethod(param: MethodHookParam) {
                 val paramMap = param.thisObject as MutableMap<*, *>
 
-                val id = when (param.args[1] as Int) {
-                    TYPE_SEASON_ID -> paramMap["season_id"]
-                    TYPE_EPISODE_ID -> "ep${paramMap["ep_id"]}"
+                val id = when {
+                    param.args[2] != "0" -> paramMap["season_id"]     // Arg2: season id
+                    param.args[3] != "0" -> "ep${paramMap["ep_id"]}"  // Arg3: episode id
                     else -> return
                 }
 
@@ -137,7 +132,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     }
 
     private fun isBangumiWithWatchPermission(body: BangumiApiResponse): Boolean {
-        log("BangumiApiResponse: code = $body.code, result = $body.result")
+        log("BangumiApiResponse: code = ${body.code}, result = ${body.result}")
         if (body.result is BangumiUniformSeason) {
             return !(body.result as BangumiUniformSeason).rights.areaLimit
         }
