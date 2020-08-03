@@ -1,5 +1,7 @@
 package me.iacn.biliroaming.inject
 
+import android.app.AndroidAppHelper
+import dalvik.system.DexFile
 import me.iacn.biliroaming.log
 
 /**
@@ -7,6 +9,9 @@ import me.iacn.biliroaming.log
  * Email meolunr@gmail.com
  */
 object ClassLoaderInjector {
+
+    private var allClassNames: MutableList<String>? = null
+
     fun setupWithHost(hostParent: ClassLoader) {
         try {
             val parentField = ClassLoader::class.java.getDeclaredField("parent")
@@ -21,5 +26,17 @@ object ClassLoaderInjector {
             log("ClassLoaderInjector: Failed to inject self class loader! Use default class loader")
             e.printStackTrace()
         }
+    }
+
+    fun getClassNames(regex: Regex): List<String>? {
+        allClassNames ?: let {
+            allClassNames = DexFile(AndroidAppHelper.currentApplication().packageCodePath).entries().toList().toMutableList()
+        }
+        return allClassNames?.filter { it.matches(regex) }
+    }
+
+    fun releaseClassNames() {
+        allClassNames?.clear()
+        allClassNames = null
     }
 }
