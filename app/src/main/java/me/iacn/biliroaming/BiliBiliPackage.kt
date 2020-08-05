@@ -9,6 +9,7 @@ import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
 import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.findClass
 import de.robv.android.xposed.XposedHelpers.getStaticObjectField
+import me.iacn.biliroaming.inject.ClassLoaderInjector
 import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
@@ -16,6 +17,7 @@ import java.io.FileOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.lang.ref.WeakReference
+import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import kotlin.reflect.KProperty
 
@@ -34,7 +36,7 @@ class BiliBiliPackage private constructor() {
     val resolveRequestParams get() = mHookInfo["method_resolve_request_params"]
 
     val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
-    val themeHelper: Class<*> by ClassWeak { findClass("tv.danmaku.bili.ui.theme.g", mClassLoader) }
+    val themeHelper: Class<*> by ClassWeak { findClass(mHookInfo["class_theme_helper"], mClassLoader) }
 
     private val accessKeyInstance by lazy {
         getStaticObjectField(findClass("com.bilibili.bangumi.ui.page.detail.pay.BangumiPayHelperV2\$accessKey\$2", mClassLoader), "INSTANCE")
@@ -98,8 +100,10 @@ class BiliBiliPackage private constructor() {
             mHookInfo["method_fastjson_parse"] = if (notObfuscated) "parseObject" else "a"
             fastJsonClass.name
 
-        } or mHookInfo.searchIfAbsent("field_color_array") {
-            searchColorArrayField()
+        } or mHookInfo.searchIfAbsent("class_theme_helper") {
+            val themeHelperClass = searchThemeHelperClass()
+            mHookInfo["field_color_array"] = searchColorArrayField(themeHelperClass)
+            themeHelperClass.name
 
         } or mHookInfo.searchIfAbsent("class_theme_list_click") {
             searchThemeListClickClass()
@@ -108,6 +112,7 @@ class BiliBiliPackage private constructor() {
             searchResolveRequestParamsMethod()
         }
 
+        ClassLoaderInjector.releaseClassNames()
         log("Check hook info is completed: needUpdate = $needUpdate")
         return needUpdate
     }
@@ -144,8 +149,21 @@ class BiliBiliPackage private constructor() {
         }
     }
 
-    private fun searchColorArrayField(): String {
-        for (field in themeHelper.declaredFields) {
+    private fun searchThemeHelperClass(): Class<*> {
+        val classNames = ClassLoaderInjector.getClassNames(Regex("^tv\\.danmaku\\.bili\\.ui\\.theme\\..$"))
+        classNames?.forEach {
+            val clazz = findClass(it, mClassLoader)
+            for (field in clazz.declaredFields) {
+                if (Modifier.isStatic(field.modifiers) && field.type == SparseArray::class.java) {
+                    return clazz
+                }
+            }
+        }
+        return Class.forName("")
+    }
+
+    private fun searchColorArrayField(themeHelperClass: Class<*>): String {
+        for (field in themeHelperClass.declaredFields) {
             if (field.type == SparseArray::class.java) {
                 val genericType = field.genericType as ParameterizedType
                 val types = genericType.actualTypeArguments
