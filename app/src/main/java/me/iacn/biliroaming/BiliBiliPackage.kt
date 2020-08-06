@@ -3,7 +3,6 @@ package me.iacn.biliroaming
 import android.content.Context
 import android.util.SparseArray
 import android.view.View
-import com.bilibili.bangumi.data.common.api.BangumiApiResponse
 import com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
 import de.robv.android.xposed.XposedHelpers.callMethod
@@ -135,7 +134,8 @@ class BiliBiliPackage private constructor() {
     }
 
     private fun searchRetrofitResponseClass(): String {
-        for (method in BangumiApiResponse::class.java.methods) {
+        val bangumiApiResponse = findClass("com.bilibili.bangumi.data.common.api.BangumiApiResponse", mClassLoader)
+        for (method in bangumiApiResponse.methods) {
             if ("extractResult" == method.name) {
                 val responseClass = method.parameterTypes[0]
                 return responseClass.name

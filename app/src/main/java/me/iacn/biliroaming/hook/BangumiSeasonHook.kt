@@ -1,8 +1,8 @@
 package me.iacn.biliroaming.hook
 
 import android.util.ArrayMap
-import com.bilibili.bangumi.data.common.api.BangumiApiResponse
 import com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason
+import com.bilibili.okretro.call.rxjava.RxGeneralResponse
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers.callMethod
@@ -51,8 +51,8 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 val body = param.args[1]
                 // Filter non-bangumi responses
                 // If it isn't bangumi, the type variable will not exist in this map
-                if ((body !is BangumiApiResponse) or ("id" !in lastSeasonInfo)) return
-                body as BangumiApiResponse
+                if ((body !is RxGeneralResponse) or ("id" !in lastSeasonInfo)) return
+                body as RxGeneralResponse
 
                 // Filter normal bangumi and other responses
                 if (isBangumiWithWatchPermission(body)) {
@@ -79,7 +79,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         findAndHookMethod(videoCardClass, "getCommentJumpUrl", urlHook)
     }
 
-    private fun onLimitedBangumiResponse(body: BangumiApiResponse) {
+    private fun onLimitedBangumiResponse(body: RxGeneralResponse) {
         val biliPackage = BiliBiliPackage.instance
         val useCache = body.result != null
 
@@ -131,7 +131,7 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         }
     }
 
-    private fun isBangumiWithWatchPermission(body: BangumiApiResponse): Boolean {
+    private fun isBangumiWithWatchPermission(body: RxGeneralResponse): Boolean {
         log("BangumiApiResponse: code = ${body.code}, result = ${body.result}")
         if (body.result is BangumiUniformSeason) {
             return !(body.result as BangumiUniformSeason).rights.areaLimit
