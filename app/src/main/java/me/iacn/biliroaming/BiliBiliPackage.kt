@@ -34,6 +34,7 @@ class BiliBiliPackage private constructor() {
     val themeListClickListener get() = mHookInfo["class_theme_list_click"]
     val resolveRequestParams get() = mHookInfo["method_resolve_request_params"]
     val garbName get() = mHookInfo["class_garb_name"]
+    val saveThemeKey get() = mHookInfo["method_save_theme_key"]
 
     val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
     val themeHelper: Class<*> by ClassWeak { findClass(mHookInfo["class_theme_helper"], mClassLoader) }
@@ -103,6 +104,7 @@ class BiliBiliPackage private constructor() {
         } or mHookInfo.searchIfAbsent("class_theme_helper") {
             val themeHelperClass = searchThemeHelperClass()
             mHookInfo["field_color_array"] = searchColorArrayField(themeHelperClass)
+            mHookInfo["method_save_theme_key"] = searchSaveThemeKeyMethod(themeHelperClass)
             themeHelperClass.name
 
         } or mHookInfo.searchIfAbsent("class_theme_list_click") {
@@ -174,6 +176,15 @@ class BiliBiliPackage private constructor() {
                     return field.name
                 }
             }
+        }
+        return ""
+    }
+
+    private fun searchSaveThemeKeyMethod(themeHelperClass: Class<*>): String {
+        for (method in themeHelperClass.declaredMethods) {
+            val parameters = method.parameterTypes
+            if (parameters.size == 2 && parameters[0] == Context::class.java && parameters[1] == Int::class.java)
+                return method.name
         }
         return ""
     }

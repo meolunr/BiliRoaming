@@ -49,7 +49,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         val garbBundle = getStaticObjectField(garbNameClass, "a") as MutableMap<String, Int>
         garbBundle["custom"] = CUSTOM_THEME_ID
 
-        findAndHookMethod("tv.danmaku.bili.ui.theme.ThemeStoreActivity", mClassLoader, "a",
+        findAndHookMethod("tv.danmaku.bili.ui.theme.ThemeStoreActivity", mClassLoader, "J9",
                 "tv.danmaku.bili.ui.theme.api.BiliSkinList", Boolean::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val biliSkinList = param.args[0]
@@ -111,7 +111,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             }
         })
 
-        findAndHookMethod(helperClass, "a", Context::class.java, Int::class.java, object : XC_MethodHook() {
+        findAndHookMethod(helperClass, biliPackage.saveThemeKey, Context::class.java, Int::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val currentThemeKey = param.args[1] as Int
                 if (currentThemeKey == -1) {
