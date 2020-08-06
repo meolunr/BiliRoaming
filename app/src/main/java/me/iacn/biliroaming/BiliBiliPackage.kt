@@ -34,6 +34,7 @@ class BiliBiliPackage private constructor() {
     val colorArray get() = mHookInfo["field_color_array"]
     val themeListClickListener get() = mHookInfo["class_theme_list_click"]
     val resolveRequestParams get() = mHookInfo["method_resolve_request_params"]
+    val garbName get() = mHookInfo["class_garb_name"]
 
     val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
     val themeHelper: Class<*> by ClassWeak { findClass(mHookInfo["class_theme_helper"], mClassLoader) }
@@ -110,6 +111,8 @@ class BiliBiliPackage private constructor() {
 
         } or mHookInfo.searchIfAbsent("method_resolve_request_params") {
             searchResolveRequestParamsMethod()
+        } or mHookInfo.searchIfAbsent("class_garb_name") {
+            searchGarbNameClass()
         }
 
         ClassLoaderInjector.releaseClassNames()
@@ -193,6 +196,19 @@ class BiliBiliPackage private constructor() {
             val parameterTypes = method.parameterTypes
             if (parameterTypes.size == 1 && parameterTypes[0] == JSONObject::class.java) {
                 return method.name
+            }
+        }
+        return ""
+    }
+
+    private fun searchGarbNameClass(): String {
+        val classNames = ClassLoaderInjector.getClassNames(Regex("^tv\\.danmaku\\.bili\\.ui\\.garb\\..$"))
+        classNames?.forEach {
+            val clazz = findClass(it, mClassLoader)
+            for (field in clazz.declaredFields) {
+                if (Modifier.isStatic(field.modifiers) && field.type == Map::class.java && field.name == "a") {
+                    return clazz.name
+                }
             }
         }
         return ""

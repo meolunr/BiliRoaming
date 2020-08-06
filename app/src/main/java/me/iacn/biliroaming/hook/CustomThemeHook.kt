@@ -45,7 +45,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         val primaryColor = ConfigManager.instance.getCustomColor(DEFAULT_CUSTOM_COLOR)
         colorArray.put(CUSTOM_THEME_ID, generateColorArray(primaryColor))
 
-        val garbNameClass = findClass("tv.danmaku.bili.ui.garb.e", mClassLoader)
+        val garbNameClass = findClass(biliPackage.garbName, mClassLoader)
         val garbBundle = getStaticObjectField(garbNameClass, "a") as MutableMap<String, Int>
         garbBundle["custom"] = CUSTOM_THEME_ID
 
