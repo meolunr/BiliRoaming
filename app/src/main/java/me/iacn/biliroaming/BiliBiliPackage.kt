@@ -74,7 +74,6 @@ class BiliBiliPackage private constructor() {
     private fun readHookInfo(context: Context) {
         val hookInfoFile = File(context.cacheDir, HOOK_INFO_FILE_NAME)
         log("Read hook info: $hookInfoFile")
-        val startTime = System.currentTimeMillis()
 
         if (hookInfoFile.isFile && hookInfoFile.canRead()) {
             val lastUpdateTime = context.packageManager.getPackageInfo(BILIBILI_PACKAGENAME, 0).lastUpdateTime
@@ -85,14 +84,15 @@ class BiliBiliPackage private constructor() {
             }
         }
 
-        val endTime = System.currentTimeMillis()
-        log("Reading hook info is completed, take ${endTime - startTime} ms")
+        log("Reading hook info is completed")
     }
 
     /**
      * @return Whether to update the serialization file.
      */
     private fun checkHookInfo(): Boolean {
+        val startTime = System.currentTimeMillis()
+
         val needUpdate = mHookInfo.searchIfAbsent("class_retrofit_response") {
             searchRetrofitResponseClass()
 
@@ -120,7 +120,8 @@ class BiliBiliPackage private constructor() {
         }
 
         ClassLoaderInjector.releaseClassNames()
-        log("Check hook info is completed: needUpdate = $needUpdate")
+        val endTime = System.currentTimeMillis()
+        log("Check hook info is completed, take ${endTime - startTime} ms: needUpdate = $needUpdate")
         return needUpdate
     }
 
@@ -158,7 +159,7 @@ class BiliBiliPackage private constructor() {
     }
 
     private fun searchThemeHelperClass(): Class<*> {
-        val classNames = ClassLoaderInjector.getClassNames(Regex("^tv\\.danmaku\\.bili\\.ui\\.theme\\..$"))
+        val classNames = ClassLoaderInjector.getClassNames("tv.danmaku.bili.ui.theme", Regex("^tv\\.danmaku\\.bili\\.ui\\.theme\\..$"))
         classNames?.forEach {
             val clazz = findClass(it, mClassLoader)
             for (field in clazz.declaredFields) {
@@ -216,7 +217,7 @@ class BiliBiliPackage private constructor() {
     }
 
     private fun searchGarbNameClass(): String {
-        val classNames = ClassLoaderInjector.getClassNames(Regex("^tv\\.danmaku\\.bili\\.ui\\.garb\\..$"))
+        val classNames = ClassLoaderInjector.getClassNames("tv.danmaku.bili.ui.garb", Regex("^tv\\.danmaku\\.bili\\.ui\\.garb\\..$"))
         classNames?.forEach {
             val clazz = findClass(it, mClassLoader)
             for (field in clazz.declaredFields) {

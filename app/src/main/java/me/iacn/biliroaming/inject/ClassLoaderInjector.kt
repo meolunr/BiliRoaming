@@ -28,11 +28,11 @@ object ClassLoaderInjector {
         }
     }
 
-    fun getClassNames(regex: Regex): List<String>? {
+    fun getClassNames(prefix: String, regex: Regex): List<String>? {
         allClassNames ?: let {
             allClassNames = DexFile(AndroidAppHelper.currentApplication().packageCodePath).entries().toList().toMutableList()
         }
-        return allClassNames?.filter { it.matches(regex) }
+        return allClassNames?.filter { it.startsWith(prefix) }?.filter { it.matches(regex) }
     }
 
     fun releaseClassNames() {
