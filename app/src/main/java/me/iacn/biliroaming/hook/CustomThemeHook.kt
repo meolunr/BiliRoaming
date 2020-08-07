@@ -31,7 +31,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
         // Kotlin does not natively support negative values
         // See: https://youtrack.jetbrains.com/issue/KT-2780
-        private var DEFAULT_CUSTOM_COLOR = 0xFFF19483.toInt()
+        private const val DEFAULT_CUSTOM_COLOR = 0xFFF19483.toInt()
     }
 
     override fun startHook() {
@@ -121,7 +121,10 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         })
 
         // Make sure that not invalidate when user not logging in
-        findAndHookMethod("tv.danmaku.bili.ui.theme.d", mClassLoader, "e", XC_MethodReplacement.DO_NOTHING)
+        val mainActivityClass = findClass("tv.danmaku.bili.MainActivityV2", mClassLoader)
+        biliPackage.themeErrorImpls?.split("|")?.forEach {
+            findAndHookMethod(mainActivityClass, it, XC_MethodReplacement.DO_NOTHING)
+        }
     }
 
     fun insertColorForWebProcess() {
