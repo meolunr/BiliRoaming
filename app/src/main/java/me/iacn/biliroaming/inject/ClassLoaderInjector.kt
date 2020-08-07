@@ -10,7 +10,7 @@ import me.iacn.biliroaming.log
  */
 object ClassLoaderInjector {
 
-    private var allClassNames: MutableList<String>? = null
+    private var mAllClassNames: MutableList<String>? = null
 
     fun setupWithHost(hostParent: ClassLoader) {
         try {
@@ -29,14 +29,14 @@ object ClassLoaderInjector {
     }
 
     fun getClassNames(prefix: String, regex: Regex): List<String>? {
-        allClassNames ?: let {
-            allClassNames = DexFile(AndroidAppHelper.currentApplication().packageCodePath).entries().toList().toMutableList()
+        mAllClassNames ?: let {
+            mAllClassNames = DexFile(AndroidAppHelper.currentApplication().packageCodePath).entries().toList().toMutableList()
         }
-        return allClassNames?.filter { it.startsWith(prefix) }?.filter { it.matches(regex) }
+        return mAllClassNames?.filter { it.startsWith(prefix) }?.filter { it.matches(regex) }
     }
 
     fun releaseClassNames() {
-        allClassNames?.clear()
-        allClassNames = null
+        mAllClassNames?.clear()
+        mAllClassNames = null
     }
 }

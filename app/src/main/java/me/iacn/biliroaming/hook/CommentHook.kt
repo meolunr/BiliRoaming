@@ -20,16 +20,12 @@ class CommentHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         val floorHook: XC_MethodHook = object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val config = getObjectField(param.thisObject, "config")
-                config?.let {
-                    setIntField(it, "mShowFloor", 1)
-                }
+                config?.run { setIntField(this, "mShowFloor", 1) }
             }
         }
-        findAndHookMethod("com.bilibili.app.comm.comment2.model.BiliCommentCursorList",
-                mClassLoader, "isShowFloor", floorHook)
-        findAndHookMethod("com.bilibili.app.comm.comment2.model.BiliCommentDialogue",
-                mClassLoader, "isShowFloor", floorHook)
-        findAndHookMethod("com.bilibili.app.comm.comment2.model.BiliCommentDetail",
-                mClassLoader, "isShowFloor", floorHook)
+
+        findAndHookMethod("com.bilibili.app.comm.comment2.model.BiliCommentCursorList", mClassLoader, "isShowFloor", floorHook)
+        findAndHookMethod("com.bilibili.app.comm.comment2.model.BiliCommentDialogue", mClassLoader, "isShowFloor", floorHook)
+        findAndHookMethod("com.bilibili.app.comm.comment2.model.BiliCommentDetail", mClassLoader, "isShowFloor", floorHook)
     }
 }

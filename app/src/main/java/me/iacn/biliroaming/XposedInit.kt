@@ -24,14 +24,12 @@ class XposedInit : IXposedHookLoadPackage {
 
     override fun handleLoadPackage(lpparam: LoadPackageParam) {
         if (BuildConfig.APPLICATION_ID == lpparam.packageName) {
-            findAndHookMethod(MainActivity.Companion::class.java.name, lpparam.classLoader,
-                    "isModuleActive", XC_MethodReplacement.returnConstant(true))
+            findAndHookMethod(MainActivity.Companion::class.java.name, lpparam.classLoader, "isModuleActive", XC_MethodReplacement.returnConstant(true))
         }
 
         if (BILIBILI_PACKAGENAME != lpparam.packageName) return
 
-        findAndHookMethod(Instrumentation::class.java, "callApplicationOnCreate",
-                Application::class.java, object : XC_MethodHook() {
+        findAndHookMethod(Instrumentation::class.java, "callApplicationOnCreate", Application::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 // Hook main process and download process
                 when (lpparam.processName) {

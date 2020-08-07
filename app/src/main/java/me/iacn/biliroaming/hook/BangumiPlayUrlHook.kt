@@ -22,6 +22,7 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         findAndHookMethod("com.bapis.bilibili.pgc.gateway.player.v1.PlayURLMoss", mClassLoader, "playView",
                 "com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReq", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
+                println("---------- PlayReq ----------")
                 println("result = ${param.result}")
                 val queryString = constructQueryString(param.args[0] as PlayViewReq)
                 println(queryString)
@@ -43,7 +44,6 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             appendQueryParameter("force_host", request.forceHost.toString())
             appendQueryParameter("fourk", request.fourk.toIntString())
             appendQueryParameter("qn", request.qn.toString())
-            toString()
-        }
+        }.toString()
     }
 }
