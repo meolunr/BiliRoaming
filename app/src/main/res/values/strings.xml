@@ -22,4 +22,6 @@
     <string name="bangumi_download_summary">允许缓存其他有观看权限的番剧</string>
     <string name="bangumi_function">番剧相关</string>
     <string name="other_function">其他功能</string>
+    <string name="applet_share_title">禁止小程序分享</string>
+    <string name="applet_share_summary">分享到QQ和微信的视频不再以小程序打开</string>
 </resources>
