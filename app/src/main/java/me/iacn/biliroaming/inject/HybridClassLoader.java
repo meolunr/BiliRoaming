@@ -7,10 +7,13 @@ import me.iacn.biliroaming.BuildConfig;
  * Email meolunr@gmail.com
  */
 class HybridClassLoader extends ClassLoader {
-    private ClassLoader hostParent;
 
-    public HybridClassLoader(ClassLoader hostParent) {
-        this.hostParent = hostParent;
+    private ClassLoader mModuleParent;
+    private ClassLoader mHostParent;
+
+    public HybridClassLoader(ClassLoader moduleParent, ClassLoader hostParent) {
+        this.mModuleParent = moduleParent;
+        this.mHostParent = hostParent;
     }
 
     @Override
@@ -18,8 +21,11 @@ class HybridClassLoader extends ClassLoader {
         if (name != null) {
             if (name.startsWith("kotlin.") || name.startsWith("kotlinx.") || name.startsWith(BuildConfig.APPLICATION_ID)) {
                 return super.findClass(name);
+            } else if (name.startsWith("de.robv.android.xposed.")) {
+                return mModuleParent.loadClass(name);
+            } else {
+                return mHostParent.loadClass(name);
             }
-            return hostParent.loadClass(name);
         }
         return super.findClass(name);
     }

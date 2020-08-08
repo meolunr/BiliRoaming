@@ -18,7 +18,8 @@ object ClassLoaderInjector {
             parentField.isAccessible = true
 
             val childrenClassLoader = ClassLoaderInjector::class.java.classLoader
-            val hybridParent = HybridClassLoader(hostParent)
+            val moduleParent = parentField.get(childrenClassLoader) as ClassLoader
+            val hybridParent = HybridClassLoader(moduleParent, hostParent)
 
             parentField.set(childrenClassLoader, hybridParent)
             log("ClassLoaderInjector: Inject self class loader is successful")

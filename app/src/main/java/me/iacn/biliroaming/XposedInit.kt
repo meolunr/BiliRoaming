@@ -56,8 +56,8 @@ class XposedInit : IXposedHookLoadPackage {
     }
 
     private fun initialize(hostClassLoader: ClassLoader, hostContext: Context) {
+        ConfigManager.instance.init()
         ClassLoaderInjector.setupWithHost(hostClassLoader)
         BiliBiliPackage.instance.init(hostClassLoader, hostContext)
-        ConfigManager.instance.init()
     }
 }
