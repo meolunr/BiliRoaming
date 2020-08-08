@@ -14,7 +14,7 @@ import me.iacn.biliroaming.log
 class TeenagersModeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
-        if (!ConfigManager.instance.enableTeenagersModeDialog()) return
+        if (!ConfigManager.instance.disableTeenagersModeDialog()) return
         log("Start hook: TeenagersMode")
 
         findAndHookMethod("com.bilibili.teenagersmode.ui.TeenagersModeDialogActivity",

@@ -21,6 +21,7 @@ class ConfigManager {
         private const val KEY_BANGUMI_DOWNLOAD = "bangumi_download"
         private const val KEY_CUSTOM_THEME = "custom_theme"
         private const val KEY_CUSTOM_COLOR = "biliroaming_custom_color"
+        private const val KEY_APPLET_SHARE = "applet_share"
 
         val instance: ConfigManager by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             ConfigManager()
@@ -34,7 +35,7 @@ class ConfigManager {
 
     fun enableMainFunc() = xPrefs.getBoolean(KEY_MAIN_FUNC, false)
 
-    fun enableTeenagersModeDialog() = xPrefs.getBoolean(KEY_TEENAGERS_MODE_DIALOG, false)
+    fun disableTeenagersModeDialog() = xPrefs.getBoolean(KEY_TEENAGERS_MODE_DIALOG, false)
 
     fun enableCommentFloor() = xPrefs.getBoolean(KEY_COMMENT_FLOOR, false)
 
@@ -45,4 +46,6 @@ class ConfigManager {
     fun getCustomColor(defValue: Int) = biliPrefs.getInt(KEY_CUSTOM_COLOR, defValue)
 
     fun putCustomColor(value: Int) = biliPrefs.edit().putInt(KEY_CUSTOM_COLOR, value).apply()
+
+    fun disableAppletShare() = xPrefs.getBoolean(KEY_APPLET_SHARE, false)
 }

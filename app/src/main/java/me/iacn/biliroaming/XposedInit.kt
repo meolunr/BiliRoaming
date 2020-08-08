@@ -8,6 +8,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
+import me.iacn.biliroaming.hook.AppletHook
 import me.iacn.biliroaming.hook.BangumiDownloadHook
 import me.iacn.biliroaming.hook.BangumiPlayUrlHook
 import me.iacn.biliroaming.hook.BangumiSeasonHook
@@ -43,6 +44,7 @@ class XposedInit : IXposedHookLoadPackage {
                         CustomThemeHook(lpparam.classLoader).startHook()
                         TeenagersModeHook(lpparam.classLoader).startHook()
                         CommentHook(lpparam.classLoader).startHook()
+                        AppletHook(lpparam.classLoader).startHook()
                     }
                     "tv.danmaku.bili:web" -> {
                         ConfigManager.instance.init()

@@ -3,6 +3,7 @@ package me.iacn.biliroaming.hook
 import android.os.Bundle
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
+import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 
 /**
@@ -11,6 +12,7 @@ import me.iacn.biliroaming.log
  */
 class AppletHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     override fun startHook() {
+        if (!ConfigManager.instance.disableAppletShare()) return
         log("Start hook: Applet")
 
         findAndHookMethod("com.bilibili.lib.sharewrapper.basic.ThirdPartyShareInterceptorV2", mClassLoader, "b",
