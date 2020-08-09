@@ -31,11 +31,12 @@ class BiliBiliPackage private constructor() {
     val retrofitResponse get() = mHookInfo["class_retrofit_response"]
     val fastJsonParse get() = mHookInfo["method_fastjson_parse"]
     val colorArray get() = mHookInfo["field_color_array"]
-    val themeListClickListener get() = mHookInfo["class_theme_list_click"]
-    val resolveRequestParams get() = mHookInfo["method_resolve_request_params"]
     val garbName get() = mHookInfo["class_garb_name"]
+    val skinLoaded get() = mHookInfo["method_skin_loaded"]
+    val themeListClickListener get() = mHookInfo["class_theme_list_click"]
     val saveThemeKey get() = mHookInfo["method_save_theme_key"]
     val themeErrorImpls get() = mHookInfo["methods_theme_error_impl"]
+    val resolveRequestParams get() = mHookInfo["method_resolve_request_params"]
 
     val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
     val themeHelper: Class<*> by ClassWeak { findClass(mHookInfo["class_theme_helper"], mClassLoader) }
@@ -108,15 +109,20 @@ class BiliBiliPackage private constructor() {
             mHookInfo["method_save_theme_key"] = searchSaveThemeKeyMethod(themeHelperClass)
             themeHelperClass.name
 
+        } or mHookInfo.searchIfAbsent("class_garb_name") {
+            searchGarbNameClass()
+
+        } or mHookInfo.searchIfAbsent("method_skin_loaded") {
+            searchSkinLoadedMethod()
+
         } or mHookInfo.searchIfAbsent("class_theme_list_click") {
             searchThemeListClickClass()
 
-        } or mHookInfo.searchIfAbsent("method_resolve_request_params") {
-            searchResolveRequestParamsMethod()
-        } or mHookInfo.searchIfAbsent("class_garb_name") {
-            searchGarbNameClass()
         } or mHookInfo.searchIfAbsent("methods_theme_error_impl") {
             searchThemeErrorImplMethods()
+
+        } or mHookInfo.searchIfAbsent("method_resolve_request_params") {
+            searchResolveRequestParamsMethod()
         }
 
         ClassLoaderInjector.releaseClassNames()
@@ -163,9 +169,8 @@ class BiliBiliPackage private constructor() {
         classNames?.forEach {
             val clazz = findClass(it, mClassLoader)
             for (field in clazz.declaredFields) {
-                if (Modifier.isStatic(field.modifiers) && field.type == SparseArray::class.java) {
+                if (Modifier.isStatic(field.modifiers) && field.type == SparseArray::class.java)
                     return clazz
-                }
             }
         }
         return Class.forName("")
@@ -175,10 +180,42 @@ class BiliBiliPackage private constructor() {
         for (field in themeHelperClass.declaredFields) {
             if (field.type == SparseArray::class.java) {
                 val genericType = field.genericType as ParameterizedType
-                val types = genericType.actualTypeArguments
-                if ("int[]" == types[0].toString()) {
+                if ("int[]" == genericType.actualTypeArguments[0].toString())
                     return field.name
-                }
+            }
+        }
+        return ""
+    }
+
+    private fun searchGarbNameClass(): String {
+        val classNames = ClassLoaderInjector.getClassNames("tv.danmaku.bili.ui.garb", Regex("^tv\\.danmaku\\.bili\\.ui\\.garb\\..$"))
+        classNames?.forEach {
+            val clazz = findClass(it, mClassLoader)
+            for (field in clazz.declaredFields) {
+                if (Modifier.isStatic(field.modifiers) && field.type == Map::class.java && field.name == "a")
+                    return clazz.name
+            }
+        }
+        return ""
+    }
+
+    private fun searchSkinLoadedMethod(): String {
+        val themeStoreActivityClass = findClass("tv.danmaku.bili.ui.theme.ThemeStoreActivity", mClassLoader)
+        val biliSkinListClass = findClass("tv.danmaku.bili.ui.theme.api.BiliSkinList", mClassLoader)
+        for (method in themeStoreActivityClass.declaredMethods) {
+            val parameters = method.parameterTypes
+            if (parameters.size == 2 && parameters[0] == biliSkinListClass && parameters[1] == Boolean::class.java)
+                return method.name
+        }
+        return ""
+    }
+
+    private fun searchThemeListClickClass(): String {
+        val themeStoreActivityClass = findClass("tv.danmaku.bili.ui.theme.ThemeStoreActivity", mClassLoader)
+        for (innerClass in themeStoreActivityClass.declaredClasses) {
+            for (interfaceClass in innerClass.interfaces) {
+                if (interfaceClass == View.OnClickListener::class.java)
+                    return innerClass.name
             }
         }
         return ""
@@ -193,14 +230,11 @@ class BiliBiliPackage private constructor() {
         return ""
     }
 
-    private fun searchThemeListClickClass(): String {
-        val themeStoreActivityClass = findClass("tv.danmaku.bili.ui.theme.ThemeStoreActivity", mClassLoader)
-        for (innerClass in themeStoreActivityClass.declaredClasses) {
-            for (interfaceClass in innerClass.interfaces) {
-                if (interfaceClass == View.OnClickListener::class.java) {
-                    return innerClass.name
-                }
-            }
+    private fun searchThemeErrorImplMethods(): String {
+        val mainActivityClass = findClass("tv.danmaku.bili.MainActivityV2", mClassLoader)
+        for (interfaceClass in mainActivityClass.interfaces) {
+            if (interfaceClass.name.startsWith("tv.danmaku.bili.ui.theme."))
+                return interfaceClass.declaredMethods.joinToString("|") { it.name }
         }
         return ""
     }
@@ -209,32 +243,8 @@ class BiliBiliPackage private constructor() {
         val resolveParamsClass = findClass("com.bilibili.lib.media.resolver.params.ResolveMediaResourceParams", mClassLoader)
         for (method in resolveParamsClass.declaredMethods) {
             val parameterTypes = method.parameterTypes
-            if (parameterTypes.size == 1 && parameterTypes[0] == JSONObject::class.java) {
+            if (parameterTypes.size == 1 && parameterTypes[0] == JSONObject::class.java)
                 return method.name
-            }
-        }
-        return ""
-    }
-
-    private fun searchGarbNameClass(): String {
-        val classNames = ClassLoaderInjector.getClassNames("tv.danmaku.bili.ui.garb", Regex("^tv\\.danmaku\\.bili\\.ui\\.garb\\..$"))
-        classNames?.forEach {
-            val clazz = findClass(it, mClassLoader)
-            for (field in clazz.declaredFields) {
-                if (Modifier.isStatic(field.modifiers) && field.type == Map::class.java && field.name == "a") {
-                    return clazz.name
-                }
-            }
-        }
-        return ""
-    }
-
-    private fun searchThemeErrorImplMethods(): String {
-        val mainActivityClass = findClass("tv.danmaku.bili.MainActivityV2", mClassLoader)
-        for (interfaceClass in mainActivityClass.interfaces) {
-            if (interfaceClass.name.startsWith("tv.danmaku.bili.ui.theme.")) {
-                return interfaceClass.declaredMethods.joinToString("|") { it.name }
-            }
         }
         return ""
     }
