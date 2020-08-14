@@ -47,7 +47,6 @@ class XposedInit : IXposedHookLoadPackage {
                         AppletHook(lpparam.classLoader).startHook()
                     }
                     "tv.danmaku.bili:web" -> {
-                        ConfigManager.instance.init()
                         CustomThemeHook(lpparam.classLoader).insertColorForWebProcess()
                     }
                 }
@@ -56,7 +55,6 @@ class XposedInit : IXposedHookLoadPackage {
     }
 
     private fun initialize(hostClassLoader: ClassLoader, hostContext: Context) {
-        ConfigManager.instance.init()
         ClassLoaderInjector.setupWithHost(hostClassLoader)
         BiliBiliPackage.instance.init(hostClassLoader, hostContext)
     }

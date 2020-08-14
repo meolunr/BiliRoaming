@@ -11,8 +11,8 @@ import de.robv.android.xposed.XSharedPreferences
  */
 class ConfigManager {
 
-    private lateinit var xPrefs: XSharedPreferences
-    private lateinit var biliPrefs: SharedPreferences
+    private val xPrefs: XSharedPreferences by lazy { XSharedPreferences(BuildConfig.APPLICATION_ID) }
+    private val biliPrefs: SharedPreferences by lazy { AndroidAppHelper.currentApplication().getSharedPreferences("bili_preference", Context.MODE_PRIVATE) }
 
     companion object {
         private const val KEY_MAIN_FUNC = "main_func"
@@ -26,11 +26,6 @@ class ConfigManager {
         val instance: ConfigManager by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             ConfigManager()
         }
-    }
-
-    fun init() {
-        xPrefs = XSharedPreferences(BuildConfig.APPLICATION_ID)
-        biliPrefs = AndroidAppHelper.currentApplication().getSharedPreferences("bili_preference", Context.MODE_PRIVATE)
     }
 
     fun enableMainFunc() = xPrefs.getBoolean(KEY_MAIN_FUNC, false)
