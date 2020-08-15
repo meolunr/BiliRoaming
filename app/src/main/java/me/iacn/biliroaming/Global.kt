@@ -22,3 +22,20 @@ fun MutableMap<String, String>.searchIfAbsent(key: String, block: () -> String):
     }
     return false
 }
+
+fun MutableMap<String, String>.searchIfMultipleAbsent(vararg keys: String, block: () -> Array<String>): Boolean {
+    var isUpdate = false
+    for (key in keys) {
+        if (!containsKey(key)) {
+            val newValues = block()
+            for ((index, value) in newValues.withIndex()) {
+                if (value.isNotEmpty()) {
+                    put(keys[index], value)
+                    isUpdate = true
+                }
+            }
+            break
+        }
+    }
+    return isUpdate
+}

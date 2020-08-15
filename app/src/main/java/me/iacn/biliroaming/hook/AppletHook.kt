@@ -3,6 +3,7 @@ package me.iacn.biliroaming.hook
 import android.os.Bundle
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
+import me.iacn.biliroaming.BiliBiliPackage
 import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 
@@ -15,8 +16,8 @@ class AppletHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         if (!ConfigManager.instance.disableAppletShare()) return
         log("Start hook: Applet")
 
-        findAndHookMethod("com.bilibili.lib.sharewrapper.basic.ThirdPartyShareInterceptorV2", mClassLoader, "b",
-                String::class.java, Bundle::class.java, "com.bilibili.lib.sharewrapper.h\$b", object : XC_MethodHook() {
+        val biliPackage = BiliBiliPackage.instance
+        findAndHookMethod(biliPackage.sharePlatformDispatch, mClassLoader, biliPackage.shareHandleBundle, String::class.java, Bundle::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val platform = param.args[0]
                 if (platform == "WEIXIN" || platform == "QQ") {

@@ -38,6 +38,8 @@ class BiliBiliPackage private constructor() {
     val saveThemeKey get() = mHookInfo["method_save_theme_key"]
     val themeErrorImpls get() = mHookInfo["methods_theme_error_impl"]
     val resolveRequestParams get() = mHookInfo["method_resolve_request_params"]
+    val sharePlatformDispatch get() = mHookInfo["class_share_platform_dispatch"]
+    val shareHandleBundle get() = mHookInfo["method_share_handle_bundle"]
 
     val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
     val themeHelper: Class<*> by ClassWeak { findClass(mHookInfo["class_theme_helper"], mClassLoader) }
@@ -98,17 +100,11 @@ class BiliBiliPackage private constructor() {
         val needUpdate = mHookInfo.searchIfAbsent("class_retrofit_response") {
             searchRetrofitResponseClass()
 
-        } or mHookInfo.searchIfAbsent("class_fastjson") {
-            val fastJsonClass = searchFastJsonClass()
-            val notObfuscated = "JSON" == fastJsonClass.simpleName
-            mHookInfo["method_fastjson_parse"] = if (notObfuscated) "parseObject" else "a"
-            fastJsonClass.name
+        } or mHookInfo.searchIfMultipleAbsent("class_fastjson", "method_fastjson_parse") {
+            searchFastJson()
 
-        } or mHookInfo.searchIfAbsent("class_theme_helper") {
-            val themeHelperClass = searchThemeHelperClass()
-            mHookInfo["field_color_array"] = searchColorArrayField(themeHelperClass)
-            mHookInfo["method_save_theme_key"] = searchSaveThemeKeyMethod(themeHelperClass)
-            themeHelperClass.name
+        } or mHookInfo.searchIfMultipleAbsent("class_theme_helper", "field_color_array", "method_save_theme_key") {
+            searchThemeHelper()
 
         } or mHookInfo.searchIfAbsent("class_garb_name") {
             searchGarbNameClass()
@@ -124,6 +120,9 @@ class BiliBiliPackage private constructor() {
 
         } or mHookInfo.searchIfAbsent("method_resolve_request_params") {
             searchResolveRequestParamsMethod()
+
+        } or mHookInfo.searchIfMultipleAbsent("class_share_platform_dispatch", "method_share_handle_bundle") {
+            searchSharePlatformDispatch()
         }
 
         ClassLoaderInjector.releaseClassNames()
@@ -157,35 +156,45 @@ class BiliBiliPackage private constructor() {
         return ""
     }
 
-    private fun searchFastJsonClass(): Class<*> {
-        return try {
+    private fun searchFastJson(): Array<String> {
+        val fastJsonClass = try {
             findClass("com.alibaba.fastjson.JSON", mClassLoader)
         } catch (e: ClassNotFoundError) {
             findClass("com.alibaba.fastjson.a", mClassLoader)
         }
+        return arrayOf(fastJsonClass.name, if ("JSON" == fastJsonClass.simpleName) "parseObject" else "a")
     }
 
-    private fun searchThemeHelperClass(): Class<*> {
+    private fun searchThemeHelper(): Array<String> {
+        val result = Array(3) { "" }
+        var themeHelperClass: Class<*>? = null
+
         val classNames = ClassLoaderInjector.getClassNames("tv.danmaku.bili.ui.theme", Regex("^tv\\.danmaku\\.bili\\.ui\\.theme\\.[^.]+$"))
         classNames?.forEach {
             val clazz = findClass(it, mClassLoader)
             for (field in clazz.declaredFields) {
-                if (Modifier.isStatic(field.modifiers) && field.type == SparseArray::class.java)
-                    return clazz
-            }
-        }
-        return Class.forName("")
-    }
+                if (Modifier.isStatic(field.modifiers) && field.type == SparseArray::class.java) {
+                    result[0] = clazz.name
 
-    private fun searchColorArrayField(themeHelperClass: Class<*>): String {
-        for (field in themeHelperClass.declaredFields) {
-            if (field.type == SparseArray::class.java) {
-                val genericType = field.genericType as ParameterizedType
-                if ("int[]" == genericType.actualTypeArguments[0].toString())
-                    return field.name
+                    // Search color array field
+                    val genericType = field.genericType as ParameterizedType
+                    if ("int[]" == genericType.actualTypeArguments[0].toString()) {
+                        result[1] = field.name
+                        themeHelperClass = clazz
+                        break
+                    }
+                }
             }
         }
-        return ""
+
+        // Search save theme key method
+        themeHelperClass?.declaredMethods?.forEach {
+            val parameters = it.parameterTypes
+            if (parameters.size == 2 && parameters[0] == Context::class.java && parameters[1] == Int::class.java)
+                result[2] = it.name
+        }
+
+        return result
     }
 
     private fun searchGarbNameClass(): String {
@@ -222,15 +231,6 @@ class BiliBiliPackage private constructor() {
         return ""
     }
 
-    private fun searchSaveThemeKeyMethod(themeHelperClass: Class<*>): String {
-        for (method in themeHelperClass.declaredMethods) {
-            val parameters = method.parameterTypes
-            if (parameters.size == 2 && parameters[0] == Context::class.java && parameters[1] == Int::class.java)
-                return method.name
-        }
-        return ""
-    }
-
     private fun searchThemeErrorImplMethods(): String {
         val mainActivityClass = findClass("tv.danmaku.bili.MainActivityV2", mClassLoader)
         for (interfaceClass in mainActivityClass.interfaces) {
@@ -250,17 +250,17 @@ class BiliBiliPackage private constructor() {
         return ""
     }
 
-    private fun searchSharePlatformDispatchClass(): String {
+    private fun searchSharePlatformDispatch(): Array<String> {
         val classNames = ClassLoaderInjector.getClassNames("com.bilibili.lib.sharewrapper", Regex("^com\\.bilibili\\.lib\\.sharewrapper\\.[^.]+$"))
         classNames?.forEach {
             val clazz = findClass(it, mClassLoader)
             for (method in clazz.declaredMethods) {
                 val parameterTypes = method.parameterTypes
                 if (parameterTypes.size == 2 && parameterTypes[0] == String::class.java && parameterTypes[1] == Bundle::class.java)
-                    return clazz.name
+                    return arrayOf(clazz.name, method.name)
             }
         }
-        return ""
+        return arrayOf()
     }
 
     private class ClassWeak(val initializer: () -> Class<*>?) {
