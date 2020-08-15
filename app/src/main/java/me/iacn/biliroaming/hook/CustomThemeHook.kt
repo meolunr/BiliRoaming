@@ -126,16 +126,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             findAndHookMethod(mainActivityClass, it, XC_MethodReplacement.DO_NOTHING)
         }
     }
-
-    fun insertColorForWebProcess() {
-        if (ConfigManager.instance.enableCustomTheme()) return
-
-        val helperClass = findClass("com.bilibili.column.helper.k", mClassLoader)
-        val colorArray = getStaticObjectField(helperClass, "l") as SparseArray<IntArray>
-        val primaryColor = ConfigManager.instance.getCustomColor(DEFAULT_CUSTOM_COLOR)
-        colorArray.put(CUSTOM_THEME_ID, generateColorArray(primaryColor))
-    }
-
+    
     /**
      * Color Array
      *

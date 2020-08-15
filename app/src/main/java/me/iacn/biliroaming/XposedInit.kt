@@ -46,9 +46,6 @@ class XposedInit : IXposedHookLoadPackage {
                         CommentHook(lpparam.classLoader).startHook()
                         AppletHook(lpparam.classLoader).startHook()
                     }
-                    "tv.danmaku.bili:web" -> {
-                        CustomThemeHook(lpparam.classLoader).insertColorForWebProcess()
-                    }
                 }
             }
         })
