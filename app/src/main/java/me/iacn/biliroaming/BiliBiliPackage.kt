@@ -167,31 +167,28 @@ class BiliBiliPackage private constructor() {
 
     private fun searchThemeHelper(): Array<String> {
         val result = Array(3) { "" }
-        var themeHelperClass: Class<*>? = null
 
         val classNames = ClassLoaderInjector.getClassNames("tv.danmaku.bili.ui.theme", Regex("^tv\\.danmaku\\.bili\\.ui\\.theme\\.[^.]+$"))
-        classNames?.forEach {
-            val clazz = findClass(it, mClassLoader)
-            for (field in clazz.declaredFields) {
-                if (Modifier.isStatic(field.modifiers) && field.type == SparseArray::class.java) {
-                    result[0] = clazz.name
-
-                    // Search color array field
-                    val genericType = field.genericType as ParameterizedType
-                    if ("int[]" == genericType.actualTypeArguments[0].toString()) {
-                        result[1] = field.name
-                        themeHelperClass = clazz
-                        break
+        classNames?.map {
+            findClass(it, mClassLoader)
+        }?.firstOrNull { clazz ->
+            // Search color array field
+            clazz.declaredFields.filter { Modifier.isStatic(it.modifiers) }.filter { it.type == SparseArray::class.java }
+                    .firstOrNull { "int[]" == (it.genericType as ParameterizedType).actualTypeArguments[0].toString() }
+                    ?.let {
+                        result[1] = it.name
+                        return@firstOrNull true
                     }
-                }
-            }
-        }
-
-        // Search save theme key method
-        themeHelperClass?.declaredMethods?.forEach {
+            false
+        }?.also {
+            result[0] = it.name
+        }?.declaredMethods?.forEach {
+            // Search save theme key method
             val parameters = it.parameterTypes
-            if (parameters.size == 2 && parameters[0] == Context::class.java && parameters[1] == Int::class.java)
+            if (parameters.size == 2 && parameters[0] == Context::class.java && parameters[1] == Int::class.java) {
                 result[2] = it.name
+                return@forEach
+            }
         }
 
         return result
