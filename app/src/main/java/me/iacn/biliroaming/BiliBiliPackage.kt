@@ -1,6 +1,7 @@
 package me.iacn.biliroaming
 
 import android.content.Context
+import android.os.Bundle
 import android.util.SparseArray
 import android.view.View
 import com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason
@@ -165,7 +166,7 @@ class BiliBiliPackage private constructor() {
     }
 
     private fun searchThemeHelperClass(): Class<*> {
-        val classNames = ClassLoaderInjector.getClassNames("tv.danmaku.bili.ui.theme", Regex("^tv\\.danmaku\\.bili\\.ui\\.theme\\..$"))
+        val classNames = ClassLoaderInjector.getClassNames("tv.danmaku.bili.ui.theme", Regex("^tv\\.danmaku\\.bili\\.ui\\.theme\\.[^.]+$"))
         classNames?.forEach {
             val clazz = findClass(it, mClassLoader)
             for (field in clazz.declaredFields) {
@@ -188,7 +189,7 @@ class BiliBiliPackage private constructor() {
     }
 
     private fun searchGarbNameClass(): String {
-        val classNames = ClassLoaderInjector.getClassNames("tv.danmaku.bili.ui.garb", Regex("^tv\\.danmaku\\.bili\\.ui\\.garb\\..$"))
+        val classNames = ClassLoaderInjector.getClassNames("tv.danmaku.bili.ui.garb", Regex("^tv\\.danmaku\\.bili\\.ui\\.garb\\.[^.]+$"))
         classNames?.forEach {
             val clazz = findClass(it, mClassLoader)
             for (field in clazz.declaredFields) {
@@ -245,6 +246,19 @@ class BiliBiliPackage private constructor() {
             val parameterTypes = method.parameterTypes
             if (parameterTypes.size == 1 && parameterTypes[0] == JSONObject::class.java)
                 return method.name
+        }
+        return ""
+    }
+
+    private fun searchSharePlatformDispatchClass(): String {
+        val classNames = ClassLoaderInjector.getClassNames("com.bilibili.lib.sharewrapper", Regex("^com\\.bilibili\\.lib\\.sharewrapper\\.[^.]+$"))
+        classNames?.forEach {
+            val clazz = findClass(it, mClassLoader)
+            for (method in clazz.declaredMethods) {
+                val parameterTypes = method.parameterTypes
+                if (parameterTypes.size == 2 && parameterTypes[0] == String::class.java && parameterTypes[1] == Bundle::class.java)
+                    return clazz.name
+            }
         }
         return ""
     }
