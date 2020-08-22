@@ -4,9 +4,9 @@ import android.net.Uri
 import com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReq
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
-import me.iacn.biliroaming.BiliBiliPackage
 import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
+import me.iacn.biliroaming.mirror.BiliBiliPackage
 import me.iacn.biliroaming.toIntString
 
 /**

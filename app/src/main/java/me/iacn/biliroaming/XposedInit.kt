@@ -16,6 +16,7 @@ import me.iacn.biliroaming.hook.CommentHook
 import me.iacn.biliroaming.hook.CustomThemeHook
 import me.iacn.biliroaming.hook.TeenagersModeHook
 import me.iacn.biliroaming.inject.ClassLoaderInjector
+import me.iacn.biliroaming.mirror.BiliBiliPackage
 
 /**
  * Created by iAcn on 2019/3/24

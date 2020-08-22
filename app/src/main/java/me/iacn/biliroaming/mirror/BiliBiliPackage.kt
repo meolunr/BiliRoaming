@@ -1,31 +1,33 @@
-package me.iacn.biliroaming
+package me.iacn.biliroaming.mirror
 
 import android.content.Context
 import android.os.Bundle
 import android.util.SparseArray
 import android.view.View
-import com.bilibili.bangumi.data.page.detail.entity.BangumiUniformSeason
 import de.robv.android.xposed.XposedHelpers.ClassNotFoundError
 import de.robv.android.xposed.XposedHelpers.callMethod
 import de.robv.android.xposed.XposedHelpers.findClass
 import de.robv.android.xposed.XposedHelpers.getStaticObjectField
+import me.iacn.biliroaming.BILIBILI_PACKAGENAME
 import me.iacn.biliroaming.inject.ClassLoaderInjector
+import me.iacn.biliroaming.log
+import me.iacn.biliroaming.searchIfAbsent
+import me.iacn.biliroaming.searchIfMultipleAbsent
 import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
-import java.lang.ref.WeakReference
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
-import kotlin.reflect.KProperty
 
 /**
- * Created by iAcn on 2019/4/5
- * Email i@iacn.me
+ * Created by Meolunr on 2019/4/5
+ * Email meolunr@gmail.com
  */
 class BiliBiliPackage private constructor() {
+
     private lateinit var mClassLoader: ClassLoader
     private var mHookInfo: MutableMap<String, String> = mutableMapOf()
 
@@ -48,15 +50,6 @@ class BiliBiliPackage private constructor() {
         getStaticObjectField(findClass("com.bilibili.bangumi.ui.page.detail.pay.BangumiPayHelperV2\$accessKey\$2", mClassLoader), "INSTANCE")
     }
     val accessKey: String get() = callMethod(accessKeyInstance, "invoke") as String
-
-    val hasModulesInResult: Boolean by lazy {
-        try {
-            BangumiUniformSeason::class.java.getField("modules")
-            true
-        } catch (ignored: NoSuchFieldException) {
-            false
-        }
-    }
 
     companion object {
         private const val HOOK_INFO_FILE_NAME = "hookinfo.dat"
@@ -258,20 +251,5 @@ class BiliBiliPackage private constructor() {
             }
         }
         return arrayOf()
-    }
-
-    private class ClassWeak(val initializer: () -> Class<*>?) {
-        private var weakReference: WeakReference<Class<*>?>? = null
-
-        operator fun getValue(thisRef: Any?, property: KProperty<*>): Class<*> {
-            weakReference?.get() ?: let {
-                weakReference = WeakReference(initializer())
-            }
-            return weakReference!!.get()!!
-        }
-
-        operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Class<*>) {
-            weakReference = WeakReference(value)
-        }
     }
 }

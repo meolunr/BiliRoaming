@@ -10,9 +10,9 @@ import de.robv.android.xposed.XposedHelpers.callStaticMethod
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.XposedHelpers.findClass
 import de.robv.android.xposed.XposedHelpers.getObjectField
-import me.iacn.biliroaming.BiliBiliPackage
 import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
+import me.iacn.biliroaming.mirror.BiliBiliPackage
 import me.iacn.biliroaming.network.BiliRoamingApi
 import org.json.JSONObject
 import com.alibaba.fastjson.JSONObject as FastJsonObject
@@ -97,12 +97,8 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 if (!newResult.rights.areaLimit) {
                     val result = body.result as BangumiUniformSeason
                     result.rights = newResult.rights
-                    result.episodes = newResult.episodes
+                    result.modules = newResult.modules
                     result.seasonLimit = null
-
-                    if (biliPackage.hasModulesInResult) {
-                        result.modules = newResult.modules
-                    }
                 }
             } else {
                 body.code = 0
@@ -116,8 +112,6 @@ class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         if (!ConfigManager.instance.enableBangumiDownload()) return
 
         result.rights.allowDownload = true
-
-        if (!BiliBiliPackage.instance.hasModulesInResult) return
 
         for (module in result.modules) {
             val data = getObjectField(module, "data") as FastJsonObject?

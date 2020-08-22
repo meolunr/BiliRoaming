@@ -15,10 +15,10 @@ import de.robv.android.xposed.XposedHelpers.getStaticObjectField
 import de.robv.android.xposed.XposedHelpers.setBooleanField
 import de.robv.android.xposed.XposedHelpers.setIntField
 import de.robv.android.xposed.XposedHelpers.setObjectField
-import me.iacn.biliroaming.BiliBiliPackage
 import me.iacn.biliroaming.ColorChooseDialog
 import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
+import me.iacn.biliroaming.mirror.BiliBiliPackage
 
 /**
  * Created by iAcn on 2019/7/14
@@ -126,7 +126,7 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             findAndHookMethod(mainActivityClass, it, XC_MethodReplacement.DO_NOTHING)
         }
     }
-    
+
     /**
      * Color Array
      *
