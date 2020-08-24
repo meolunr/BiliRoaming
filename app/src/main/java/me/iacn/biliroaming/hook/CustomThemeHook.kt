@@ -12,13 +12,12 @@ import de.robv.android.xposed.XposedHelpers.findClass
 import de.robv.android.xposed.XposedHelpers.getIntField
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import de.robv.android.xposed.XposedHelpers.getStaticObjectField
-import de.robv.android.xposed.XposedHelpers.setBooleanField
 import de.robv.android.xposed.XposedHelpers.setIntField
-import de.robv.android.xposed.XposedHelpers.setObjectField
 import me.iacn.biliroaming.ColorChooseDialog
 import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 import me.iacn.biliroaming.mirror.BiliBiliPackage
+import tv.danmaku.bili.ui.theme.api.BiliSkin
 
 /**
  * Created by iAcn on 2019/7/14
@@ -55,10 +54,10 @@ class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 val biliSkinList = param.args[0]
                 val mList = getObjectField(biliSkinList, "mList") as MutableList<Any>
 
-                val biliSkin = findClass("tv.danmaku.bili.ui.theme.api.BiliSkin", mClassLoader).newInstance().apply {
-                    setIntField(this, "mId", CUSTOM_THEME_ID)
-                    setObjectField(this, "mName", "自选颜色")
-                    setBooleanField(this, "mIsFree", true)
+                val biliSkin = BiliSkin().apply {
+                    mId = CUSTOM_THEME_ID
+                    mIsFree = true
+                    mName = "自选颜色"
                 }
                 // Under the night mode item
                 mList.add(3, biliSkin)
