@@ -42,7 +42,7 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    implementation 'com.github.iAcn:EditColorHelper:v1.1'
+    implementation 'com.github.meolunr:EditTextColorHelper:v1.2'
     compileOnly 'de.robv.android.xposed:api:82'
     compileOnly 'de.robv.android.xposed:api:82:sources'
     compileOnly project(':stub')
