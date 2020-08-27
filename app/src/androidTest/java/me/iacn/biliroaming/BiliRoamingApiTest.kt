@@ -15,6 +15,7 @@ class BiliRoamingApiTest {
     @Test
     fun testGetSeason() {
         val content = BiliRoamingApi.getSeason("21680", "", true)
+        println(content)
         val contentJson = JSONObject(content)
         assertEquals(0, contentJson.optInt("code"))
 
@@ -40,7 +41,5 @@ class BiliRoamingApiTest {
             assertNotNull(episodes)
             assert(episodes!!.length() > 0)
         }
-
-        println(content)
     }
 }
