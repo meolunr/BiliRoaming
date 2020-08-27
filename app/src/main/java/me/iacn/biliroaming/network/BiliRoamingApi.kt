@@ -55,8 +55,15 @@ object BiliRoamingApi {
         modules.put(positiveModule)
 
         if (result.has("seasons")) {
+            val seasons = result.getJSONArray("seasons")
+            for (i in 0 until seasons.length()) {
+                val season = seasons.getJSONObject(i)
+                val seasonId = season.getInt("season_id")
+                season.put("link", "https://www.bilibili.com/bangumi/play/ss$seasonId")
+            }
+
             val seasonModule = JSONObject()
-                    .put("data", JSONObject().put("seasons", result.getJSONArray("seasons")))
+                    .put("data", JSONObject().put("seasons", seasons))
                     .put("id", modules.length() + 1)
                     .put("module_style", JSONObject().put("line", 1))
                     .put("style", "season")
