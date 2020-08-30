@@ -27,15 +27,18 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         findAndHookMethod("com.bapis.bilibili.pgc.gateway.player.v1.PlayURLMoss", mClassLoader, "playView",
                 "com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReq", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
+                val response = param.result as PlayViewReply
+                // Filter normal play url
+                if (response.hasVideoInfo()) return
+
                 println("---------- PlayReq ----------")
-                /*println("result = ${param.result}")*/
                 val queryString = constructQueryString(param.args[0] as PlayViewReq)
                 println(queryString)
 
                 println("<<< constructProtoBufResponse >>>")
                 val contentJson = JSONObject(BiliRoamingApi.getPlayUrl(queryString))
-                val response = constructProtoBufResponse(contentJson)
-                println(response)
+                val newResponse = constructProtoBufResponse(contentJson)
+                println(newResponse)
             }
         })
     }

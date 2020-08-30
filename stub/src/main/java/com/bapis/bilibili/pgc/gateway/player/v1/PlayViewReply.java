@@ -8,6 +8,10 @@ public final class PlayViewReply extends GeneratedMessageLite {
     private PlayViewReply() {
     }
 
+    public boolean hasVideoInfo() {
+        throw new RuntimeException("Stub!");
+    }
+
     public static Builder newBuilder() {
         throw new RuntimeException("Stub!");
     }
