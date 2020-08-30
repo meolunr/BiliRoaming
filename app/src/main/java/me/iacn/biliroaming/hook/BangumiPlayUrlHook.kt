@@ -1,6 +1,9 @@
 package me.iacn.biliroaming.hook
 
 import android.net.Uri
+import com.alibaba.fastjson.JSONObject
+import com.bapis.bilibili.pgc.gateway.player.v1.PlayAbilityConf
+import com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReply
 import com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReq
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
@@ -10,8 +13,8 @@ import me.iacn.biliroaming.mirror.BiliBiliPackage
 import me.iacn.biliroaming.toIntString
 
 /**
- * Created by iAcn on 2019/3/29
- * Email i@iacn.me
+ * Created by Meolunr on 2019/3/29
+ * Email meolunr@gmail.com
  */
 class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
@@ -23,10 +26,11 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 "com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReq", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 println("---------- PlayReq ----------")
-                println("result = ${param.result}")
+                /*println("result = ${param.result}")
                 val queryString = constructQueryString(param.args[0] as PlayViewReq)
                 println(queryString)
-//                println(BiliRoamingApi.getPlayUrl(queryString))
+                println(BiliRoamingApi.getPlayUrl(queryString))*/
+                constructProtoBufResponse(JSONObject())
             }
         })
     }
@@ -45,5 +49,17 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             appendQueryParameter("fourk", request.fourk.toIntString())
             appendQueryParameter("qn", request.qn.toString())
         }.toString()
+    }
+
+    private fun constructProtoBufResponse(contentJson: JSONObject): PlayViewReply {
+        println("<<< constructProtoBufResponse >>>")
+
+        return PlayViewReply.newBuilder().apply {
+            setPlayConf(PlayAbilityConf.newBuilder().apply {
+                setDislikeDisable(true)
+                setElecDisable(true)
+                setShakeDisable(true)
+            }.build())
+        }.build()
     }
 }

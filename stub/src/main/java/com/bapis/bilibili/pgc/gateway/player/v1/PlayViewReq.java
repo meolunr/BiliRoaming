@@ -1,6 +1,10 @@
 package com.bapis.bilibili.pgc.gateway.player.v1;
 
 public final class PlayViewReq {
+
+    private PlayViewReq() {
+    }
+
     public long getCid() {
         throw new RuntimeException("Stub!");
     }
