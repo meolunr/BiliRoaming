@@ -1,6 +1,7 @@
 package me.iacn.biliroaming.hook
 
 import android.net.Uri
+import com.bapis.bilibili.app.playurl.v1.DashItem
 import com.bapis.bilibili.app.playurl.v1.VideoInfo
 import com.bapis.bilibili.pgc.gateway.player.v1.PlayAbilityConf
 import com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReply
@@ -60,6 +61,8 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     }
 
     private fun constructProtoBufResponse(contentJson: JSONObject): PlayViewReply {
+        val dash = contentJson.getJSONObject("dash")
+
         return PlayViewReply.newBuilder().apply {
             setPlayConf(PlayAbilityConf.newBuilder().apply {
                 setDislikeDisable(true)
@@ -72,6 +75,24 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 setQuality(contentJson.optInt("quality"))
                 setTimelength(contentJson.optLong("timelength"))
                 setVideoCodecid(contentJson.optInt("video_codecid"))
+
+                val audios = dash.getJSONArray("audio")
+                for (i in 0 until audios.length()) {
+                    val audio = audios.getJSONObject(i)
+                    addDashAudio(DashItem.newBuilder().apply {
+                        setBaseUrl(audio.optString("base_url"))
+                        setBandwidth(audio.optInt("bandwidth"))
+                        setCodecid(audio.optInt("codecid"))
+                        setId(audio.optInt("id"))
+                        setMd5(audio.optString("md5"))
+                        setSize(audio.optLong("size"))
+
+                        val urls = audio.getJSONArray("backup_url")
+                        for (j in 0 until urls.length()) {
+                            addBackupUrl(urls.getString(j))
+                        }
+                    }.build())
+                }
             }.build())
         }.build()
     }
