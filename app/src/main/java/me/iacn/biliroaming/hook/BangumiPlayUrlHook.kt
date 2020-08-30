@@ -1,7 +1,7 @@
 package me.iacn.biliroaming.hook
 
 import android.net.Uri
-import com.alibaba.fastjson.JSONObject
+import com.bapis.bilibili.app.playurl.v1.VideoInfo
 import com.bapis.bilibili.pgc.gateway.player.v1.PlayAbilityConf
 import com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReply
 import com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReq
@@ -10,7 +10,9 @@ import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 import me.iacn.biliroaming.mirror.BiliBiliPackage
+import me.iacn.biliroaming.network.BiliRoamingApi
 import me.iacn.biliroaming.toIntString
+import org.json.JSONObject
 
 /**
  * Created by Meolunr on 2019/3/29
@@ -26,11 +28,14 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 "com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReq", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 println("---------- PlayReq ----------")
-                /*println("result = ${param.result}")
+                /*println("result = ${param.result}")*/
                 val queryString = constructQueryString(param.args[0] as PlayViewReq)
                 println(queryString)
-                println(BiliRoamingApi.getPlayUrl(queryString))*/
-                constructProtoBufResponse(JSONObject())
+
+                println("<<< constructProtoBufResponse >>>")
+                val contentJson = JSONObject(BiliRoamingApi.getPlayUrl(queryString))
+                val response = constructProtoBufResponse(contentJson)
+                println(response)
             }
         })
     }
@@ -52,13 +57,18 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     }
 
     private fun constructProtoBufResponse(contentJson: JSONObject): PlayViewReply {
-        println("<<< constructProtoBufResponse >>>")
-
         return PlayViewReply.newBuilder().apply {
             setPlayConf(PlayAbilityConf.newBuilder().apply {
                 setDislikeDisable(true)
                 setElecDisable(true)
                 setShakeDisable(true)
+            }.build())
+
+            setVideoInfo(VideoInfo.newBuilder().apply {
+                setFormat(contentJson.optString("format"))
+                setQuality(contentJson.optInt("quality"))
+                setTimelength(contentJson.optLong("timelength"))
+                setVideoCodecid(contentJson.optInt("video_codecid"))
             }.build())
         }.build()
     }
