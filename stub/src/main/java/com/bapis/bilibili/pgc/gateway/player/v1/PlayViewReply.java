@@ -18,11 +18,11 @@ public final class PlayViewReply extends GeneratedMessageLite {
 
     public static final class Builder extends GeneratedMessageLite.Builder<PlayViewReply> {
 
-        public Builder setPlayConf(PlayAbilityConf conf) {
+        public Builder setPlayConf(PlayAbilityConf.Builder builder) {
             throw new RuntimeException("Stub!");
         }
 
-        public Builder setVideoInfo(VideoInfo videoInfo) {
+        public Builder setVideoInfo(VideoInfo.Builder builder) {
             throw new RuntimeException("Stub!");
         }
     }

@@ -68,7 +68,7 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 setDislikeDisable(true)
                 setElecDisable(true)
                 setShakeDisable(true)
-            }.build())
+            })
 
             setVideoInfo(VideoInfo.newBuilder().apply {
                 setFormat(contentJson.optString("format"))
@@ -91,9 +91,9 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                         for (j in 0 until urls.length()) {
                             addBackupUrl(urls.getString(j))
                         }
-                    }.build())
+                    })
                 }
-            }.build())
+            })
         }.build()
     }
 }
