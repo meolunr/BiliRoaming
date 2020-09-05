@@ -13,7 +13,11 @@ public final class VideoInfo extends GeneratedMessageLite {
 
     public static final class Builder extends GeneratedMessageLite.Builder<VideoInfo> {
 
-        public Builder addDashAudio(DashItem item) {
+        public Builder addDashAudio(DashItem.Builder builder) {
+            throw new RuntimeException("Stub!");
+        }
+
+        public Builder addStreamList(Stream.Builder builder) {
             throw new RuntimeException("Stub!");
         }
 
