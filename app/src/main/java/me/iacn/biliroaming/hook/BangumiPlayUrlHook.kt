@@ -4,6 +4,7 @@ import android.net.Uri
 import com.bapis.bilibili.app.playurl.v1.DashItem
 import com.bapis.bilibili.app.playurl.v1.DashVideo
 import com.bapis.bilibili.app.playurl.v1.Stream
+import com.bapis.bilibili.app.playurl.v1.StreamInfo
 import com.bapis.bilibili.app.playurl.v1.VideoInfo
 import com.bapis.bilibili.pgc.gateway.player.v1.PlayAbilityConf
 import com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReply
@@ -64,9 +65,9 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     }
 
     private fun constructProtoBufResponse(contentJson: JSONObject): PlayViewReply {
-        val dash = contentJson.getJSONObject("dash")
-
         return PlayViewReply.newBuilder().apply {
+            val dash = contentJson.getJSONObject("dash")
+
             setPlayConf(PlayAbilityConf.newBuilder().apply {
                 setDislikeDisable(true)
                 setElecDisable(true)
@@ -102,6 +103,9 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 }
 
                 var audioIndex = audioIds.size
+                val noRexcode = contentJson.optInt("no_rexcode") != 0
+                val formatMap = generateFormatMap(contentJson)
+
                 val videos = dash.getJSONArray("video")
                 for (i in 0 until videos.length()) {
                     val video = videos.getJSONObject(i)
@@ -114,8 +118,8 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                             setBandwidth(video.optInt("bandwidth"))
                             setCodecid(video.optInt("codecid"))
                             setMd5(video.optString("md5"))
-                            setNoRexcode(video.optInt("no_rexcode") != 0)
                             setSize(video.optLong("size"))
+                            setNoRexcode(noRexcode)
 
                             // Audio Bandwidth: narrow --> broad
                             // Video Bandwidth: broad  --> narrow
@@ -128,9 +132,37 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                                 addBackupUrl(urls.getString(j))
                             }
                         })
+
+                        setStreamInfo(StreamInfo.newBuilder().apply {
+                            val quality = video.optInt("id")
+                            formatMap[quality]?.run {
+                                setDescription(getString("description"))
+                                setFormat(getString("format"))
+                                setNeedLogin(optBoolean("need_login"))
+                                setNeedVip(optBoolean("need_vip"))
+                            }
+
+                            setAttribute(0)
+                            setIntact(true)
+                            setQuality(quality)
+                            setNoRexcode(noRexcode)
+                        })
                     })
                 }
             })
         }.build()
+    }
+
+    private fun generateFormatMap(contentJson: JSONObject): MutableMap<Int, JSONObject> {
+        val formatMap = mutableMapOf<Int, JSONObject>()
+        val formatJsonArray = contentJson.getJSONArray("support_formats")
+
+        for (i in 0 until formatJsonArray.length()) {
+            val format = formatJsonArray.getJSONObject(i)
+            val quality = format.optInt("quality")
+            formatMap[quality] = format
+        }
+
+        return formatMap
     }
 }

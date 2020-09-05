@@ -29,6 +29,18 @@ public final class StreamInfo extends GeneratedMessageLite {
             throw new RuntimeException("Stub!");
         }
 
+        public Builder setNeedLogin(boolean value) {
+            throw new RuntimeException("Stub!");
+        }
+
+        public Builder setNeedVip(boolean value) {
+            throw new RuntimeException("Stub!");
+        }
+
+        public Builder setNoRexcode(boolean value) {
+            throw new RuntimeException("Stub!");
+        }
+
         public Builder setQuality(int quality) {
             throw new RuntimeException("Stub!");
         }
