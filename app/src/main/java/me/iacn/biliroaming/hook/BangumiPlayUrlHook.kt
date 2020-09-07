@@ -32,18 +32,17 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 "com.bapis.bilibili.pgc.gateway.player.v1.PlayViewReq", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 val response = param.result as PlayViewReply
-//                println(response)
                 // Filter normal play url
                 if (response.hasVideoInfo()) return
 
-                println("---------- PlayReq ----------")
                 val queryString = constructQueryString(param.args[0] as PlayViewReq)
-                println(queryString)
-
-                println("<<< constructProtoBufResponse >>>")
                 val contentJson = JSONObject(BiliRoamingApi.getPlayUrl(queryString))
-                val newResponse = constructProtoBufResponse(contentJson)
-                println(newResponse)
+
+                if (contentJson.optInt("code") == 0) {
+                    val newResponse = constructProtoBufResponse(contentJson)
+                    param.result = newResponse
+                    log("The play url was replaced with proxy server, type: protobuf")
+                }
             }
         })
     }

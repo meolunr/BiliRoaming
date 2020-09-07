@@ -72,7 +72,7 @@ class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             loadedCids.add(cid)
 
             content = BiliRoamingApi.getPlayUrl(queryString)
-            log("Has replaced play url with proxy server")
+            log("The play url was replaced with proxy server, type: json")
         }
         param.result = ByteArrayInputStream(content.toByteArray())
     }
