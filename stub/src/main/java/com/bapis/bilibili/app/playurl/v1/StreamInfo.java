@@ -21,6 +21,10 @@ public final class StreamInfo extends GeneratedMessageLite {
             throw new RuntimeException("Stub!");
         }
 
+        public Builder setDisplayDesc(String displayDesc) {
+            throw new RuntimeException("Stub!");
+        }
+
         public Builder setFormat(String format) {
             throw new RuntimeException("Stub!");
         }
@@ -37,11 +41,19 @@ public final class StreamInfo extends GeneratedMessageLite {
             throw new RuntimeException("Stub!");
         }
 
+        public Builder setNewDescription(String description) {
+            throw new RuntimeException("Stub!");
+        }
+
         public Builder setNoRexcode(boolean value) {
             throw new RuntimeException("Stub!");
         }
 
         public Builder setQuality(int quality) {
+            throw new RuntimeException("Stub!");
+        }
+
+        public Builder setSuperscript(String script) {
             throw new RuntimeException("Stub!");
         }
     }

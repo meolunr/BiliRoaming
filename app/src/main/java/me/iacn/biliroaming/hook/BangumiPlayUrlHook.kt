@@ -143,10 +143,13 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                     setStreamInfo(StreamInfo.newBuilder().apply {
                         val quality = video.optInt("id")
                         formatMap[quality]?.run {
-                            setDescription(getString("description"))
-                            setFormat(getString("format"))
+                            setDescription(optString("description"))
+                            setDisplayDesc(optString("display_desc"))
+                            setFormat(optString("format"))
                             setNeedLogin(optBoolean("need_login"))
                             setNeedVip(optBoolean("need_vip"))
+                            setNewDescription(optString("new_description"))
+                            setSuperscript(optString("superscript"))
                         }
                         setAttribute(0)
                         setIntact(true)
