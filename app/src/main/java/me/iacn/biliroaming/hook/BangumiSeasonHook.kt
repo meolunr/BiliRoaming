@@ -18,8 +18,8 @@ import org.json.JSONObject
 import com.alibaba.fastjson.JSONObject as FastJsonObject
 
 /**
- * Created by iAcn on 2019/3/27
- * Email i@iacn.me
+ * Created by Meolunr on 2019/3/27
+ * Email meolunr@gmail.com
  */
 class BangumiSeasonHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 

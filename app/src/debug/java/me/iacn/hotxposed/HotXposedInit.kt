@@ -13,8 +13,8 @@ import me.iacn.biliroaming.BuildConfig
 import java.io.File
 
 /**
- * Created by iAcn on 2019/3/25
- * Email i@iacn.me
+ * Created by Meolunr on 2019/3/25
+ * Email meolunr@gmail.com
  */
 class HotXposedInit : IXposedHookLoadPackage {
 

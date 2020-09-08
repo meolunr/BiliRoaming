@@ -14,8 +14,8 @@ import android.util.Log
 import java.io.File
 
 /**
- * Created by iAcn on 2019/3/23
- * Email i@iacn.me
+ * Created by Meolunr on 2019/3/23
+ * Email meolunr@gmail.com
  */
 class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {

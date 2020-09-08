@@ -20,8 +20,8 @@ import me.iacn.biliroaming.mirror.BiliBiliPackage
 import tv.danmaku.bili.ui.theme.api.BiliSkin
 
 /**
- * Created by iAcn on 2019/7/14
- * Email i@iacn.me
+ * Created by Meolunr on 2019/7/14
+ * Email meolunr@gmail.com
  */
 class CustomThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 

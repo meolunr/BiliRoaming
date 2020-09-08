@@ -8,8 +8,8 @@ import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 
 /**
- * Created by iAcn on 2019/12/15
- * Email i@iacn.me
+ * Created by Meolunr on 2019/12/15
+ * Email meolunr@gmail.com
  */
 class TeenagersModeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 

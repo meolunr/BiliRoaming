@@ -3,8 +3,8 @@ package me.iacn.biliroaming.network
 import java.io.InputStream
 
 /**
- * Created by iAcn on 2019/3/26
- * Email i@iacn.me
+ * Created by Meolunr on 2019/3/26
+ * Email meolunr@gmail.com
  */
 object StreamUtils {
 

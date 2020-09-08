@@ -19,8 +19,8 @@ import me.iacn.biliroaming.inject.ClassLoaderInjector
 import me.iacn.biliroaming.mirror.BiliBiliPackage
 
 /**
- * Created by iAcn on 2019/3/24
- * Email i@iacn.me
+ * Created by Meolunr on 2019/3/24
+ * Email meolunr@gmail.com
  */
 class XposedInit : IXposedHookLoadPackage {
 

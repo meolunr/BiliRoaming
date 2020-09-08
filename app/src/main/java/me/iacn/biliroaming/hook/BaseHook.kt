@@ -1,8 +1,8 @@
 package me.iacn.biliroaming.hook
 
 /**
- * Created by iAcn on 2019/3/27
- * Email i@iacn.me
+ * Created by Meolunr on 2019/3/27
+ * Email meolunr@gmail.com
  */
 abstract class BaseHook(protected var mClassLoader: ClassLoader) {
     abstract fun startHook()

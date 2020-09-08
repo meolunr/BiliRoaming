@@ -43,8 +43,8 @@ class BiliBiliPackage private constructor() {
     val sharePlatformDispatch get() = mHookInfo["class_share_platform_dispatch"]
     val shareHandleBundle get() = mHookInfo["method_share_handle_bundle"]
 
-    val fastJson: Class<*> by ClassWeak { findClass(mHookInfo["class_fastjson"], mClassLoader) }
-    val themeHelper: Class<*> by ClassWeak { findClass(mHookInfo["class_theme_helper"], mClassLoader) }
+    val fastJson: Class<*> by WeakClass { findClass(mHookInfo["class_fastjson"], mClassLoader) }
+    val themeHelper: Class<*> by WeakClass { findClass(mHookInfo["class_theme_helper"], mClassLoader) }
 
     private val accessKeyInstance by lazy {
         getStaticObjectField(findClass("com.bilibili.bangumi.ui.page.detail.pay.BangumiPayHelperV2\$accessKey\$2", mClassLoader), "INSTANCE")

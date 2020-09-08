@@ -16,8 +16,8 @@ import android.widget.TextView
 import com.meolunr.edittextcolorhelper.EditTextColorHelper
 
 /**
- * Created by iAcn on 2019/7/14
- * Email i@iacn.me
+ * Created by Meolunr on 2019/7/14
+ * Email meolunr@gmail.com
  */
 class ColorChooseDialog(context: Context, defColor: Int) : AlertDialog.Builder(context) {
     private lateinit var sampleView: View

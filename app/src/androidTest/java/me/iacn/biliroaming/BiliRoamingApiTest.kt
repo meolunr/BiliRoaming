@@ -9,6 +9,10 @@ import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
 
+/**
+ * Created by Meolunr on 2020/8/26
+ * Email meolunr@gmail.com
+ */
 @RunWith(AndroidJUnit4::class)
 class BiliRoamingApiTest {
 

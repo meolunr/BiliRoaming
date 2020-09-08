@@ -8,8 +8,8 @@ import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
 
 /**
- * Created by iAcn on 2020/2/27
- * Email i@iacn.me
+ * Created by Meolunr on 2020/2/27
+ * Email meolunr@gmail.com
  */
 class CommentHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 

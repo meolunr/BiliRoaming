@@ -8,8 +8,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Created by iAcn on 2019/3/27
- * Email i@iacn.me
+ * Created by Meolunr on 2019/3/27
+ * Email meolunr@gmail.com
  */
 object BiliRoamingApi {
 
