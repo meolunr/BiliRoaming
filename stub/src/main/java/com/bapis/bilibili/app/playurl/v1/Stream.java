@@ -17,6 +17,10 @@ public final class Stream extends GeneratedMessageLite {
             throw new RuntimeException("Stub!");
         }
 
+        public Builder setSegmentVideo(SegmentVideo.Builder builder) {
+            throw new RuntimeException("Stub!");
+        }
+
         public Builder setStreamInfo(StreamInfo.Builder builder) {
             throw new RuntimeException("Stub!");
         }

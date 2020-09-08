@@ -3,6 +3,8 @@ package me.iacn.biliroaming.hook
 import android.net.Uri
 import com.bapis.bilibili.app.playurl.v1.DashItem
 import com.bapis.bilibili.app.playurl.v1.DashVideo
+import com.bapis.bilibili.app.playurl.v1.ResponseUrl
+import com.bapis.bilibili.app.playurl.v1.SegmentVideo
 import com.bapis.bilibili.app.playurl.v1.Stream
 import com.bapis.bilibili.app.playurl.v1.StreamInfo
 import com.bapis.bilibili.app.playurl.v1.VideoInfo
@@ -162,8 +164,42 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
     }
 
     private fun buildInSegment(videoInfoBuilder: VideoInfo.Builder, contentJson: JSONObject) {
-        // TODO: Build probuf of type flv
-        println("Flv Json => $contentJson")
+        videoInfoBuilder.run {
+            addStreamList(Stream.newBuilder().apply {
+                setSegmentVideo(SegmentVideo.newBuilder().apply {
+                    val durls = contentJson.getJSONArray("durl")
+                    for (i in 0 until durls.length()) {
+                        val durl = durls.getJSONObject(i)
+
+                        addSegment(ResponseUrl.newBuilder().apply {
+                            setLength(durl.optLong("length"))
+                            setMd5(durl.optString("md5"))
+                            setOrder(durl.optInt("order"))
+                            setSize(durl.optLong("size"))
+                            setUrl(durl.optString("url"))
+
+                            val urls = durl.getJSONArray("backup_url")
+                            for (j in 0 until urls.length())
+                                addBackupUrl(urls.getString(j))
+                        })
+                    }
+                })
+
+                setStreamInfo(StreamInfo.newBuilder().apply {
+                    val quality = contentJson.optInt("quality")
+                    generateFormatMap(contentJson)[quality]?.run {
+                        setDescription(getString("description"))
+                        setFormat(getString("format"))
+                        setNeedLogin(optBoolean("need_login"))
+                        setNeedVip(optBoolean("need_vip"))
+                    }
+                    setAttribute(0)
+                    setIntact(true)
+                    setQuality(quality)
+                    setNoRexcode(contentJson.optInt("no_rexcode") != 0)
+                })
+            })
+        }
     }
 
     private fun generateFormatMap(contentJson: JSONObject): MutableMap<Int, JSONObject> {
