@@ -65,8 +65,6 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     private fun constructProtoBufResponse(contentJson: JSONObject): PlayViewReply {
         return PlayViewReply.newBuilder().apply {
-            val dash = contentJson.getJSONObject("dash")
-
             setPlayConf(PlayAbilityConf.newBuilder().apply {
                 setDislikeDisable(true)
                 setElecDisable(true)
@@ -79,77 +77,90 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 setTimelength(contentJson.optLong("timelength"))
                 setVideoCodecid(contentJson.optInt("video_codecid"))
 
-                val audios = dash.getJSONArray("audio")
-                val audioIds = mutableListOf<Int>()
-                for (i in 0 until audios.length()) {
-                    val audio = audios.getJSONObject(i)
-                    val id = audio.optInt("id")
-                    audioIds.add(id)
-
-                    addDashAudio(DashItem.newBuilder().apply {
-                        setBaseUrl(audio.optString("base_url"))
-                        setBandwidth(audio.optInt("bandwidth"))
-                        setCodecid(audio.optInt("codecid"))
-                        setMd5(audio.optString("md5"))
-                        setSize(audio.optLong("size"))
-                        setId(id)
-
-                        val urls = audio.getJSONArray("backup_url")
-                        for (j in 0 until urls.length()) {
-                            addBackupUrl(urls.getString(j))
-                        }
-                    })
-                }
-
-                var audioIndex = audioIds.size
-                val noRexcode = contentJson.optInt("no_rexcode") != 0
-                val formatMap = generateFormatMap(contentJson)
-
-                val videos = dash.getJSONArray("video")
-                for (i in 0 until videos.length()) {
-                    val video = videos.getJSONObject(i)
-                    // Unused video info
-                    if (video.optInt("codecid") != contentJson.optInt("video_codecid")) continue
-
-                    addStreamList(Stream.newBuilder().apply {
-                        setDashVideo(DashVideo.newBuilder().apply {
-                            setBaseUrl(video.optString("base_url"))
-                            setBandwidth(video.optInt("bandwidth"))
-                            setCodecid(video.optInt("codecid"))
-                            setMd5(video.optString("md5"))
-                            setSize(video.optLong("size"))
-                            setNoRexcode(noRexcode)
-
-                            // Audio Bandwidth: narrow --> broad
-                            // Video Bandwidth: broad  --> narrow
-                            // Use the narrowest bandwidth audio when audio and video streams are not a pair. (Official logic)
-                            audioIndex--
-                            setAudioId(audioIds[if (audioIndex >= 0) audioIndex else 0])
-
-                            val urls = video.getJSONArray("backup_url")
-                            for (j in 0 until urls.length()) {
-                                addBackupUrl(urls.getString(j))
-                            }
-                        })
-
-                        setStreamInfo(StreamInfo.newBuilder().apply {
-                            val quality = video.optInt("id")
-                            formatMap[quality]?.run {
-                                setDescription(getString("description"))
-                                setFormat(getString("format"))
-                                setNeedLogin(optBoolean("need_login"))
-                                setNeedVip(optBoolean("need_vip"))
-                            }
-
-                            setAttribute(0)
-                            setIntact(true)
-                            setQuality(quality)
-                            setNoRexcode(noRexcode)
-                        })
-                    })
+                when (contentJson.optString("type")) {
+                    "DASH" -> buildInDash(this, contentJson)
+                    "FLV" -> buildInSegment(this, contentJson)
                 }
             })
         }.build()
+    }
+
+    private fun buildInDash(videoInfoBuilder: VideoInfo.Builder, contentJson: JSONObject) {
+        videoInfoBuilder.run {
+            val dash = contentJson.getJSONObject("dash")
+
+            val audios = dash.getJSONArray("audio")
+            val audioIds = mutableListOf<Int>()
+            for (i in 0 until audios.length()) {
+                val audio = audios.getJSONObject(i)
+                val id = audio.optInt("id")
+                audioIds.add(id)
+
+                addDashAudio(DashItem.newBuilder().apply {
+                    setBaseUrl(audio.optString("base_url"))
+                    setBandwidth(audio.optInt("bandwidth"))
+                    setCodecid(audio.optInt("codecid"))
+                    setMd5(audio.optString("md5"))
+                    setSize(audio.optLong("size"))
+                    setId(id)
+
+                    val urls = audio.getJSONArray("backup_url")
+                    for (j in 0 until urls.length())
+                        addBackupUrl(urls.getString(j))
+                })
+            }
+
+            var audioIndex = audioIds.size
+            val noRexcode = contentJson.optInt("no_rexcode") != 0
+            val formatMap = generateFormatMap(contentJson)
+
+            val videos = dash.getJSONArray("video")
+            for (i in 0 until videos.length()) {
+                val video = videos.getJSONObject(i)
+                // Unused video info
+                if (video.optInt("codecid") != contentJson.optInt("video_codecid")) continue
+
+                addStreamList(Stream.newBuilder().apply {
+                    setDashVideo(DashVideo.newBuilder().apply {
+                        setBaseUrl(video.optString("base_url"))
+                        setBandwidth(video.optInt("bandwidth"))
+                        setCodecid(video.optInt("codecid"))
+                        setMd5(video.optString("md5"))
+                        setSize(video.optLong("size"))
+                        setNoRexcode(noRexcode)
+
+                        // Audio Bandwidth: narrow --> broad
+                        // Video Bandwidth: broad  --> narrow
+                        // Use the narrowest bandwidth audio when audio and video streams are not a pair. (Official logic)
+                        audioIndex--
+                        setAudioId(audioIds[if (audioIndex >= 0) audioIndex else 0])
+
+                        val urls = video.getJSONArray("backup_url")
+                        for (j in 0 until urls.length())
+                            addBackupUrl(urls.getString(j))
+                    })
+
+                    setStreamInfo(StreamInfo.newBuilder().apply {
+                        val quality = video.optInt("id")
+                        formatMap[quality]?.run {
+                            setDescription(getString("description"))
+                            setFormat(getString("format"))
+                            setNeedLogin(optBoolean("need_login"))
+                            setNeedVip(optBoolean("need_vip"))
+                        }
+                        setAttribute(0)
+                        setIntact(true)
+                        setQuality(quality)
+                        setNoRexcode(noRexcode)
+                    })
+                })
+            }
+        }
+    }
+
+    private fun buildInSegment(videoInfoBuilder: VideoInfo.Builder, contentJson: JSONObject) {
+        // TODO: Build probuf of type flv
+        println("Flv Json => $contentJson")
     }
 
     private fun generateFormatMap(contentJson: JSONObject): MutableMap<Int, JSONObject> {
