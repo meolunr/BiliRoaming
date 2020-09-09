@@ -18,6 +18,7 @@ import me.iacn.biliroaming.log
 import me.iacn.biliroaming.mirror.BiliBiliPackage
 import me.iacn.biliroaming.network.BiliRoamingApi
 import me.iacn.biliroaming.toIntString
+import org.json.JSONArray
 import org.json.JSONObject
 
 /**
@@ -79,7 +80,9 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 setTimelength(contentJson.optLong("timelength"))
                 setVideoCodecid(contentJson.optInt("video_codecid"))
 
-                when (contentJson.optString("type")) {
+                val type = contentJson.optString("type")
+                log("Construct video stream, type: $type")
+                when (type) {
                     "DASH" -> buildInDash(this, contentJson)
                     "FLV" -> buildInSegment(this, contentJson)
                 }
@@ -114,50 +117,48 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
             var audioIndex = audioIds.size
             val noRexcode = contentJson.optInt("no_rexcode") != 0
-            val formatMap = generateFormatMap(contentJson)
+            val videoMap = generateVideoMap(dash.getJSONArray("video"), contentJson.getInt("video_codecid"))
 
-            val videos = dash.getJSONArray("video")
-            for (i in 0 until videos.length()) {
-                val video = videos.getJSONObject(i)
-                // Unused video info
-                if (video.optInt("codecid") != contentJson.optInt("video_codecid")) continue
+            val formats = contentJson.getJSONArray("support_formats")
+            for (i in 0 until formats.length()) {
+                val format = formats.getJSONObject(i)
+                val quality = format.optInt("quality")
 
                 addStreamList(Stream.newBuilder().apply {
-                    setDashVideo(DashVideo.newBuilder().apply {
-                        setBaseUrl(video.optString("base_url"))
-                        setBandwidth(video.optInt("bandwidth"))
-                        setCodecid(video.optInt("codecid"))
-                        setMd5(video.optString("md5"))
-                        setSize(video.optLong("size"))
-                        setNoRexcode(noRexcode)
-
-                        // Audio Bandwidth: narrow --> broad
-                        // Video Bandwidth: broad  --> narrow
-                        // Use the narrowest bandwidth audio when audio and video streams are not a pair. (Official logic)
-                        audioIndex--
-                        setAudioId(audioIds[if (audioIndex >= 0) audioIndex else 0])
-
-                        val urls = video.getJSONArray("backup_url")
-                        for (j in 0 until urls.length())
-                            addBackupUrl(urls.getString(j))
-                    })
-
                     setStreamInfo(StreamInfo.newBuilder().apply {
-                        val quality = video.optInt("id")
-                        formatMap[quality]?.run {
-                            setDescription(optString("description"))
-                            setDisplayDesc(optString("display_desc"))
-                            setFormat(optString("format"))
-                            setNeedLogin(optBoolean("need_login"))
-                            setNeedVip(optBoolean("need_vip"))
-                            setNewDescription(optString("new_description"))
-                            setSuperscript(optString("superscript"))
-                        }
                         setAttribute(0)
                         setIntact(true)
                         setQuality(quality)
                         setNoRexcode(noRexcode)
+                        setDescription(format.optString("description"))
+                        setDisplayDesc(format.optString("display_desc"))
+                        setFormat(format.optString("format"))
+                        setNeedLogin(format.optBoolean("need_login"))
+                        setNeedVip(format.optBoolean("need_vip"))
+                        setNewDescription(format.optString("new_description"))
+                        setSuperscript(format.optString("superscript"))
                     })
+
+                    videoMap[quality]?.let {
+                        setDashVideo(DashVideo.newBuilder().apply {
+                            setBaseUrl(it.optString("base_url"))
+                            setBandwidth(it.optInt("bandwidth"))
+                            setCodecid(it.optInt("codecid"))
+                            setMd5(it.optString("md5"))
+                            setSize(it.optLong("size"))
+                            setNoRexcode(noRexcode)
+
+                            // Audio Bandwidth: narrow --> broad
+                            // Video Bandwidth: broad  --> narrow
+                            // Use the narrowest bandwidth audio when audio and video streams are not a pair. (Official logic)
+                            audioIndex--
+                            setAudioId(audioIds[if (audioIndex >= 0) audioIndex else 0])
+
+                            val urls = it.getJSONArray("backup_url")
+                            for (j in 0 until urls.length())
+                                addBackupUrl(urls.getString(j))
+                        })
+                    }
                 })
             }
         }
@@ -165,53 +166,63 @@ class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     private fun buildInSegment(videoInfoBuilder: VideoInfo.Builder, contentJson: JSONObject) {
         videoInfoBuilder.run {
-            addStreamList(Stream.newBuilder().apply {
-                setSegmentVideo(SegmentVideo.newBuilder().apply {
-                    val durls = contentJson.getJSONArray("durl")
-                    for (i in 0 until durls.length()) {
-                        val durl = durls.getJSONObject(i)
+            val formats = contentJson.getJSONArray("support_formats")
+            for (i in 0 until formats.length()) {
+                val format = formats.getJSONObject(i)
+                val quality = format.optInt("quality")
 
-                        addSegment(ResponseUrl.newBuilder().apply {
-                            setLength(durl.optLong("length"))
-                            setMd5(durl.optString("md5"))
-                            setOrder(durl.optInt("order"))
-                            setSize(durl.optLong("size"))
-                            setUrl(durl.optString("url"))
+                addStreamList(Stream.newBuilder().apply {
+                    setStreamInfo(StreamInfo.newBuilder().apply {
+                        setAttribute(0)
+                        setIntact(true)
+                        setQuality(quality)
+                        setNoRexcode(contentJson.optInt("no_rexcode") != 0)
+                        setDescription(format.optString("description"))
+                        setDisplayDesc(format.optString("display_desc"))
+                        setFormat(format.optString("format"))
+                        setNeedLogin(format.optBoolean("need_login"))
+                        setNeedVip(format.optBoolean("need_vip"))
+                        setNewDescription(format.optString("new_description"))
+                        setSuperscript(format.optString("superscript"))
+                    })
 
-                            val urls = durl.getJSONArray("backup_url")
-                            for (j in 0 until urls.length())
-                                addBackupUrl(urls.getString(j))
+                    if (quality == contentJson.getInt("quality")) {
+                        setSegmentVideo(SegmentVideo.newBuilder().apply {
+                            val durls = contentJson.getJSONArray("durl")
+                            for (j in 0 until durls.length()) {
+                                val durl = durls.getJSONObject(j)
+
+                                addSegment(ResponseUrl.newBuilder().apply {
+                                    setLength(durl.optLong("length"))
+                                    setMd5(durl.optString("md5"))
+                                    setOrder(durl.optInt("order"))
+                                    setSize(durl.optLong("size"))
+                                    setUrl(durl.optString("url"))
+
+                                    val urls = durl.getJSONArray("backup_url")
+                                    for (k in 0 until urls.length())
+                                        addBackupUrl(urls.getString(k))
+                                })
+                            }
                         })
                     }
                 })
-
-                setStreamInfo(StreamInfo.newBuilder().apply {
-                    val quality = contentJson.optInt("quality")
-                    generateFormatMap(contentJson)[quality]?.run {
-                        setDescription(getString("description"))
-                        setFormat(getString("format"))
-                        setNeedLogin(optBoolean("need_login"))
-                        setNeedVip(optBoolean("need_vip"))
-                    }
-                    setAttribute(0)
-                    setIntact(true)
-                    setQuality(quality)
-                    setNoRexcode(contentJson.optInt("no_rexcode") != 0)
-                })
-            })
+            }
         }
     }
 
-    private fun generateFormatMap(contentJson: JSONObject): MutableMap<Int, JSONObject> {
-        val formatMap = mutableMapOf<Int, JSONObject>()
-        val formatJsonArray = contentJson.getJSONArray("support_formats")
+    private fun generateVideoMap(videoJsonArray: JSONArray, videoCodecid: Int): MutableMap<Int, JSONObject> {
+        val videoMap = mutableMapOf<Int, JSONObject>()
 
-        for (i in 0 until formatJsonArray.length()) {
-            val format = formatJsonArray.getJSONObject(i)
-            val quality = format.optInt("quality")
-            formatMap[quality] = format
+        for (i in 0 until videoJsonArray.length()) {
+            val video = videoJsonArray.getJSONObject(i)
+            // Unused video info
+            if (video.optInt("codecid") != videoCodecid) continue
+
+            val quality = video.optInt("id")
+            videoMap[quality] = video
         }
 
-        return formatMap
+        return videoMap
     }
 }
