@@ -12,6 +12,7 @@ import me.iacn.biliroaming.hook.AppletHook
 import me.iacn.biliroaming.hook.BangumiDownloadHook
 import me.iacn.biliroaming.hook.BangumiPlayUrlHook
 import me.iacn.biliroaming.hook.BangumiSeasonHook
+import me.iacn.biliroaming.hook.BiliSettingsHook
 import me.iacn.biliroaming.hook.CommentHook
 import me.iacn.biliroaming.hook.CustomThemeHook
 import me.iacn.biliroaming.hook.TeenagersModeHook
@@ -46,6 +47,7 @@ class XposedInit : IXposedHookLoadPackage {
                         TeenagersModeHook(lpparam.classLoader).startHook()
                         CommentHook(lpparam.classLoader).startHook()
                         AppletHook(lpparam.classLoader).startHook()
+                        BiliSettingsHook(lpparam.classLoader).startHook()
                     }
                 }
             }
