@@ -24,4 +24,7 @@
     <string name="other_function">其他功能</string>
     <string name="applet_share_title">禁止小程序分享</string>
     <string name="applet_share_summary">分享到QQ和微信的视频不再以小程序打开</string>
+    <string name="player_function">播放设置</string>
+    <string name="player_recommend_title">禁用相关推荐窗口</string>
+    <string name="player_recommend_summary">不显示播放界面的相关推荐窗口</string>
 </resources>

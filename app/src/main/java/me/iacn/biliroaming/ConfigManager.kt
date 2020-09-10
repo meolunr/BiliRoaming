@@ -22,6 +22,7 @@ class ConfigManager {
         private const val KEY_CUSTOM_THEME = "custom_theme"
         private const val KEY_CUSTOM_COLOR = "biliroaming_custom_color"
         private const val KEY_APPLET_SHARE = "applet_share"
+        private const val KEY_PLAYER_RECOMMEND = "player_recommend"
 
         val instance: ConfigManager by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             ConfigManager()
@@ -43,4 +44,6 @@ class ConfigManager {
     fun putCustomColor(value: Int) = biliPrefs.edit().putInt(KEY_CUSTOM_COLOR, value).apply()
 
     fun disableAppletShare() = xPrefs.getBoolean(KEY_APPLET_SHARE, false)
+
+    fun disablePlayerRecommend() = xPrefs.getBoolean(KEY_PLAYER_RECOMMEND, false)
 }

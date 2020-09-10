@@ -16,6 +16,15 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="@string/player_function">
+
+        <SwitchPreference
+            android:key="player_recommend"
+            android:summary="@string/player_recommend_summary"
+            android:title="@string/player_recommend_title" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/other_function">
 
         <SwitchPreference
