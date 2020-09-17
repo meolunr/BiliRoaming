@@ -8,13 +8,13 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
-import me.iacn.biliroaming.hook.AppletHook
 import me.iacn.biliroaming.hook.BangumiDownloadHook
 import me.iacn.biliroaming.hook.BangumiPlayUrlHook
 import me.iacn.biliroaming.hook.BangumiSeasonHook
 import me.iacn.biliroaming.hook.BiliSettingsHook
 import me.iacn.biliroaming.hook.CommentHook
 import me.iacn.biliroaming.hook.CustomThemeHook
+import me.iacn.biliroaming.hook.SharePlatformHook
 import me.iacn.biliroaming.hook.TeenagersModeHook
 import me.iacn.biliroaming.inject.ClassLoaderInjector
 import me.iacn.biliroaming.mirror.BiliBiliPackage
@@ -46,7 +46,7 @@ class XposedInit : IXposedHookLoadPackage {
                         CustomThemeHook(lpparam.classLoader).startHook()
                         TeenagersModeHook(lpparam.classLoader).startHook()
                         CommentHook(lpparam.classLoader).startHook()
-                        AppletHook(lpparam.classLoader).startHook()
+                        SharePlatformHook(lpparam.classLoader).startHook()
                         BiliSettingsHook(lpparam.classLoader).startHook()
                     }
                 }
