@@ -6,6 +6,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.log
+import me.iacn.biliroaming.logic.TeenagersModeDialog
 
 /**
  * Created by Meolunr on 2019/12/15
@@ -20,9 +21,7 @@ class TeenagersModeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         findAndHookMethod("com.bilibili.teenagersmode.ui.TeenagersModeDialogActivity",
                 mClassLoader, "onCreate", Bundle::class.java, object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
-                val activity = param.thisObject as Activity
-                activity.finish()
-                log("Teenagers mode dialog has been closed")
+                TeenagersModeDialog.onPostTeenagersDialogCreate(param.thisObject as Activity)
             }
         })
     }
