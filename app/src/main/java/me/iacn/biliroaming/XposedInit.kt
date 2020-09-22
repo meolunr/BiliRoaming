@@ -12,7 +12,7 @@ import me.iacn.biliroaming.hook.BangumiDownloadHook
 import me.iacn.biliroaming.hook.BangumiPlayUrlHook
 import me.iacn.biliroaming.hook.BangumiSeasonHook
 import me.iacn.biliroaming.hook.BiliSettingsHook
-import me.iacn.biliroaming.hook.CommentHook
+import me.iacn.biliroaming.hook.CommentConfigHook
 import me.iacn.biliroaming.hook.SharePlatformHook
 import me.iacn.biliroaming.hook.TeenagersModeHook
 import me.iacn.biliroaming.hook.ThemeHook
@@ -45,7 +45,7 @@ class XposedInit : IXposedHookLoadPackage {
                         BangumiDownloadHook(lpparam.classLoader).startHook()
                         ThemeHook(lpparam.classLoader).startHook()
                         TeenagersModeHook(lpparam.classLoader).startHook()
-                        CommentHook(lpparam.classLoader).startHook()
+                        CommentConfigHook(lpparam.classLoader).startHook()
                         SharePlatformHook(lpparam.classLoader).startHook()
                         BiliSettingsHook(lpparam.classLoader).startHook()
                     }
