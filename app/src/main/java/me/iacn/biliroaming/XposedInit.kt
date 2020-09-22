@@ -10,12 +10,13 @@ import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import me.iacn.biliroaming.hook.BangumiDownloadHook
 import me.iacn.biliroaming.hook.BangumiPlayUrlHook
-import me.iacn.biliroaming.hook.BangumiSeasonHook
 import me.iacn.biliroaming.hook.BiliSettingsHook
 import me.iacn.biliroaming.hook.CommentConfigHook
+import me.iacn.biliroaming.hook.RetrofitResponseHook
+import me.iacn.biliroaming.hook.SeasonRelatedHook
 import me.iacn.biliroaming.hook.SharePlatformHook
 import me.iacn.biliroaming.hook.TeenagersModeHook
-import me.iacn.biliroaming.hook.ThemeHook
+import me.iacn.biliroaming.hook.ThemeRelatedHook
 import me.iacn.biliroaming.inject.ClassLoaderInjector
 import me.iacn.biliroaming.mirror.BiliBiliPackage
 
@@ -40,10 +41,11 @@ class XposedInit : IXposedHookLoadPackage {
                         log("BiliBili process launched...")
                         initialize(lpparam.classLoader, param.args[0] as Context)
 
-                        BangumiSeasonHook(lpparam.classLoader).startHook()
+                        RetrofitResponseHook(lpparam.classLoader).startHook()
+                        SeasonRelatedHook(lpparam.classLoader).startHook()
                         BangumiPlayUrlHook(lpparam.classLoader).startHook()
                         BangumiDownloadHook(lpparam.classLoader).startHook()
-                        ThemeHook(lpparam.classLoader).startHook()
+                        ThemeRelatedHook(lpparam.classLoader).startHook()
                         TeenagersModeHook(lpparam.classLoader).startHook()
                         CommentConfigHook(lpparam.classLoader).startHook()
                         SharePlatformHook(lpparam.classLoader).startHook()

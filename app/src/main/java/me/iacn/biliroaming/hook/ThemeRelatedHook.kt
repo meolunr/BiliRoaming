@@ -17,7 +17,7 @@ import tv.danmaku.bili.ui.theme.api.BiliSkin
  * Created by Meolunr on 2019/7/14
  * Email meolunr@gmail.com
  */
-class ThemeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
+class ThemeRelatedHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!ConfigManager.instance.enableCustomTheme()) return
