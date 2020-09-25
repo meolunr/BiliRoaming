@@ -12,7 +12,7 @@ import me.iacn.biliroaming.logic.BangumiPlayUrl
  * Created by Meolunr on 2019/3/29
  * Email meolunr@gmail.com
  */
-class BangumiPlayUrlHook(classLoader: ClassLoader) : BaseHook(classLoader) {
+class GrpcApiHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!ConfigManager.instance.enableMainFunc()) return

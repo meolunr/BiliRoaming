@@ -9,9 +9,9 @@ import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import me.iacn.biliroaming.hook.BangumiDownloadHook
-import me.iacn.biliroaming.hook.BangumiPlayUrlHook
-import me.iacn.biliroaming.hook.BiliSettingsHook
+import me.iacn.biliroaming.hook.CloudConfigHook
 import me.iacn.biliroaming.hook.CommentConfigHook
+import me.iacn.biliroaming.hook.GrpcApiHook
 import me.iacn.biliroaming.hook.RetrofitResponseHook
 import me.iacn.biliroaming.hook.SeasonRelatedHook
 import me.iacn.biliroaming.hook.SharePlatformHook
@@ -43,13 +43,13 @@ class XposedInit : IXposedHookLoadPackage {
 
                         RetrofitResponseHook(lpparam.classLoader).startHook()
                         SeasonRelatedHook(lpparam.classLoader).startHook()
-                        BangumiPlayUrlHook(lpparam.classLoader).startHook()
+                        GrpcApiHook(lpparam.classLoader).startHook()
                         BangumiDownloadHook(lpparam.classLoader).startHook()
                         ThemeRelatedHook(lpparam.classLoader).startHook()
                         TeenagersModeHook(lpparam.classLoader).startHook()
                         CommentConfigHook(lpparam.classLoader).startHook()
                         SharePlatformHook(lpparam.classLoader).startHook()
-                        BiliSettingsHook(lpparam.classLoader).startHook()
+                        CloudConfigHook(lpparam.classLoader).startHook()
                     }
                 }
             }
