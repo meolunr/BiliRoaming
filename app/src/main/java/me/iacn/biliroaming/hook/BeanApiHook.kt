@@ -13,7 +13,7 @@ import me.iacn.biliroaming.mirror.BiliBiliPackage
  * Created by Meolunr on 2019/3/27
  * Email meolunr@gmail.com
  */
-class RetrofitResponseHook(classLoader: ClassLoader) : BaseHook(classLoader) {
+class BeanApiHook(classLoader: ClassLoader) : BaseHook(classLoader) {
 
     override fun startHook() {
         if (!ConfigManager.instance.enableMainFunc()) return
