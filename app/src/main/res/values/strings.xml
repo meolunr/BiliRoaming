@@ -14,7 +14,7 @@
     <string name="hide_icon_title">隐藏桌面图标</string>
     <string name="custom_theme_title">自定义主题色</string>
     <string name="custom_theme_summary">添加自定义主题颜色的功能</string>
-    <string name="teenagers_mode_dialog_title">关闭青少年模式弹窗</string>
+    <string name="teenagers_mode_dialog_title">禁用青少年模式弹窗</string>
     <string name="teenagers_mode_dialog_summary">仍可从侧滑菜单进入青少年模式</string>
     <string name="comment_floor_title">评论区楼层显示</string>
     <string name="comment_floor_summary">恢复以前版本的评论楼层显示</string>
@@ -22,9 +22,11 @@
     <string name="bangumi_download_summary">允许缓存其他有观看权限的番剧</string>
     <string name="bangumi_function">番剧相关</string>
     <string name="other_function">其他功能</string>
-    <string name="applet_share_title">禁止小程序分享</string>
+    <string name="applet_share_title">禁用小程序分享</string>
     <string name="applet_share_summary">分享到QQ和微信的视频不再以小程序打开</string>
     <string name="player_function">播放设置</string>
     <string name="player_recommend_title">禁用相关推荐窗口</string>
     <string name="player_recommend_summary">不显示播放界面的相关推荐窗口</string>
+    <string name="danmaku_text_size_sync_title">不同步弹幕字号到云端</string>
+    <string name="danmaku_text_size_sync_summary">避免手机和平板等设备的弹幕大小不一致</string>
 </resources>

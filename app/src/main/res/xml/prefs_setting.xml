@@ -23,6 +23,11 @@
             android:summary="@string/player_recommend_summary"
             android:title="@string/player_recommend_title" />
 
+        <SwitchPreference
+            android:key="danmaku_text_size_sync"
+            android:summary="@string/danmaku_text_size_sync_summary"
+            android:title="@string/danmaku_text_size_sync_title" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/other_function">

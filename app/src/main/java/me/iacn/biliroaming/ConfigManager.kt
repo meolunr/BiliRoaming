@@ -23,6 +23,7 @@ class ConfigManager {
         private const val KEY_CUSTOM_COLOR = "biliroaming_custom_color"
         private const val KEY_APPLET_SHARE = "applet_share"
         private const val KEY_PLAYER_RECOMMEND = "player_recommend"
+        private const val KEY_DANMAKU_TEXT_SIZE_SYNC = "danmaku_text_size_sync"
 
         val instance: ConfigManager by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             ConfigManager()
@@ -46,4 +47,6 @@ class ConfigManager {
     fun disableAppletShare() = xPrefs.getBoolean(KEY_APPLET_SHARE, false)
 
     fun disablePlayerRecommend() = xPrefs.getBoolean(KEY_PLAYER_RECOMMEND, false)
+
+    fun disableDanmakuTextSizeSync() = xPrefs.getBoolean(KEY_DANMAKU_TEXT_SIZE_SYNC, false)
 }
