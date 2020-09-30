@@ -19,15 +19,14 @@ import java.net.HttpURLConnection
  * Created by Meolunr on 2020/7/16
  * Email meolunr@gmail.com
  */
-class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
+class BangumiDownloadHook : BaseHook() {
 
     private val loadedCids: MutableSet<Int> by lazy { mutableSetOf() }
 
-    override fun startHook() {
-        if (!ConfigManager.instance.enableBangumiDownload()) return
-        log("Start hook: BangumiDownload")
+    override fun isEnable() = ConfigManager.instance.enableBangumiDownload() // Temporary
 
-        findAndHookMethod("com.bilibili.lib.media.resolver.params.ResolveMediaResourceParams", mClassLoader, BiliBiliPackage.instance.resolveRequestParams, JSONObject::class.java, object : XC_MethodHook() {
+    override fun startHook(classLoader: ClassLoader) {
+        findAndHookMethod("com.bilibili.lib.media.resolver.params.ResolveMediaResourceParams", classLoader, BiliBiliPackage.instance.resolveRequestParams, JSONObject::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 // Benefit from client retry mechanism
                 // This will use forced download on the second request
@@ -47,7 +46,7 @@ class BangumiDownloadHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             }
         })
 
-        findAndHookMethod("com.bilibili.lib.okhttp.huc.OkHttpURLConnection", mClassLoader, "getInputStream", object : XC_MethodHook() {
+        findAndHookMethod("com.bilibili.lib.okhttp.huc.OkHttpURLConnection", classLoader, "getInputStream", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 // Found from "b.ecy" in version 5.39.1
                 val connection = param.thisObject as HttpURLConnection

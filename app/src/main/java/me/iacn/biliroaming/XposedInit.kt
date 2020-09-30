@@ -41,15 +41,22 @@ class XposedInit : IXposedHookLoadPackage {
                         log("BiliBili process launched...")
                         initialize(lpparam.classLoader, param.args[0] as Context)
 
-                        BeanApiHook(lpparam.classLoader).startHook()
-                        SeasonRelatedHook(lpparam.classLoader).startHook()
-                        GrpcApiHook(lpparam.classLoader).startHook()
-                        BangumiDownloadHook(lpparam.classLoader).startHook()
-                        ThemeRelatedHook(lpparam.classLoader).startHook()
-                        TeenagersModeHook(lpparam.classLoader).startHook()
-                        CommentConfigHook(lpparam.classLoader).startHook()
-                        SharePlatformHook(lpparam.classLoader).startHook()
-                        CloudConfigHook(lpparam.classLoader).startHook()
+                        arrayOf(
+                                GrpcApiHook(),
+                                BeanApiHook(),
+                                BangumiDownloadHook(),
+                                SeasonRelatedHook(),
+                                ThemeRelatedHook(),
+                                TeenagersModeHook(),
+                                CommentConfigHook(),
+                                SharePlatformHook(),
+                                CloudConfigHook(),
+                        ).filter {
+                            it.isEnable()
+                        }.forEach {
+                            it.startHook(lpparam.classLoader)
+                            log("Start hook: ${it::class.java.simpleName.removeSuffix("Hook")}")
+                        }
                     }
                 }
             }

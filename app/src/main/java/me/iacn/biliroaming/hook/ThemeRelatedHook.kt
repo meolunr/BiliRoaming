@@ -8,7 +8,6 @@ import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.XposedHelpers.findClass
 import de.robv.android.xposed.XposedHelpers.getObjectField
 import me.iacn.biliroaming.ConfigManager
-import me.iacn.biliroaming.log
 import me.iacn.biliroaming.logic.CustomTheme
 import me.iacn.biliroaming.mirror.BiliBiliPackage
 import tv.danmaku.bili.ui.theme.api.BiliSkin
@@ -17,17 +16,15 @@ import tv.danmaku.bili.ui.theme.api.BiliSkin
  * Created by Meolunr on 2019/7/14
  * Email meolunr@gmail.com
  */
-class ThemeRelatedHook(classLoader: ClassLoader) : BaseHook(classLoader) {
+class ThemeRelatedHook : BaseHook() {
 
-    override fun startHook() {
-        if (!ConfigManager.instance.enableCustomTheme()) return
-        log("Start hook: CustomTheme")
+    override fun isEnable() = ConfigManager.instance.enableCustomTheme()
 
-        CustomTheme.onStartHook(mClassLoader)
+    override fun startHook(classLoader: ClassLoader) {
+        CustomTheme.onStartHook(classLoader)
 
         val biliPackage = BiliBiliPackage.instance
-
-        findAndHookMethod("tv.danmaku.bili.ui.theme.ThemeStoreActivity", mClassLoader, biliPackage.skinLoaded,
+        findAndHookMethod("tv.danmaku.bili.ui.theme.ThemeStoreActivity", classLoader, biliPackage.skinLoaded,
                 "tv.danmaku.bili.ui.theme.api.BiliSkinList", Boolean::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val biliSkinList = param.args[0]
@@ -37,7 +34,7 @@ class ThemeRelatedHook(classLoader: ClassLoader) : BaseHook(classLoader) {
             }
         })
 
-        findAndHookMethod(biliPackage.themeListClickListener, mClassLoader, "onClick", View::class.java, object : XC_MethodHook() {
+        findAndHookMethod(biliPackage.themeListClickListener, classLoader, "onClick", View::class.java, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val view = param.args[0] as View
                 val idName = view.resources.getResourceEntryName(view.id)
@@ -60,7 +57,7 @@ class ThemeRelatedHook(classLoader: ClassLoader) : BaseHook(classLoader) {
         })
 
         // Make sure that not invalidate when user not logging in
-        val mainActivityClass = findClass("tv.danmaku.bili.MainActivityV2", mClassLoader)
+        val mainActivityClass = findClass("tv.danmaku.bili.MainActivityV2", classLoader)
         biliPackage.themeErrorImpls?.split("|")?.forEach {
             findAndHookMethod(mainActivityClass, it, XC_MethodReplacement.DO_NOTHING)
         }

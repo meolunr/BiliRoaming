@@ -4,7 +4,6 @@ import com.bapis.bilibili.app.playurl.v1.CloudConf
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import me.iacn.biliroaming.ConfigManager
-import me.iacn.biliroaming.log
 import me.iacn.biliroaming.logic.PlayerRecommend
 
 /**
@@ -12,12 +11,12 @@ import me.iacn.biliroaming.logic.PlayerRecommend
  * Email meolunr@gmail.com
  */
 
-class CloudConfigHook(classLoader: ClassLoader) : BaseHook(classLoader) {
-    override fun startHook() {
-        if (!ConfigManager.instance.disablePlayerRecommend()) return
-        log("Start hook: BiliSettings")
+class CloudConfigHook : BaseHook() {
 
-        findAndHookMethod("com.bilibili.lib.deviceconfig.generated.internal.PlayAbilityConfImpl\$recommendConf\$1", mClassLoader, "invoke", object : XC_MethodHook() {
+    override fun isEnable() = ConfigManager.instance.disablePlayerRecommend()
+
+    override fun startHook(classLoader: ClassLoader) {
+        findAndHookMethod("com.bilibili.lib.deviceconfig.generated.internal.PlayAbilityConfImpl\$recommendConf\$1", classLoader, "invoke", object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 param.result = PlayerRecommend.onGetRecommendConfig(param.result as CloudConf)
             }

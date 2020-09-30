@@ -5,21 +5,19 @@ import android.os.Bundle
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import me.iacn.biliroaming.ConfigManager
-import me.iacn.biliroaming.log
 import me.iacn.biliroaming.logic.TeenagersModeDialog
 
 /**
  * Created by Meolunr on 2019/12/15
  * Email meolunr@gmail.com
  */
-class TeenagersModeHook(classLoader: ClassLoader) : BaseHook(classLoader) {
+class TeenagersModeHook : BaseHook() {
 
-    override fun startHook() {
-        if (!ConfigManager.instance.disableTeenagersModeDialog()) return
-        log("Start hook: TeenagersMode")
+    override fun isEnable() = ConfigManager.instance.disableTeenagersModeDialog()
 
+    override fun startHook(classLoader: ClassLoader) {
         findAndHookMethod("com.bilibili.teenagersmode.ui.TeenagersModeDialogActivity",
-                mClassLoader, "onCreate", Bundle::class.java, object : XC_MethodHook() {
+                classLoader, "onCreate", Bundle::class.java, object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 TeenagersModeDialog.onPostTeenagersDialogCreate(param.thisObject as Activity)
             }

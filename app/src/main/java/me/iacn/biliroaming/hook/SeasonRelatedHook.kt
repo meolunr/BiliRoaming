@@ -4,15 +4,19 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers.findAndHookMethod
 import de.robv.android.xposed.XposedHelpers.findClass
+import me.iacn.biliroaming.ConfigManager
 import me.iacn.biliroaming.logic.BangumiSeason
 
 /**
  * Created by Meolunr on 2020/9/22
  * Email meolunr@gmail.com
  */
-class SeasonRelatedHook(classLoader: ClassLoader) : BaseHook(classLoader) {
-    override fun startHook() {
-        val paramsMapClass = findClass("com.bilibili.bangumi.data.page.detail.BangumiDetailApiService\$UniformSeasonParamsMap", mClassLoader)
+class SeasonRelatedHook : BaseHook() {
+
+    override fun isEnable() = ConfigManager.instance.enableMainFunc()
+
+    override fun startHook(classLoader: ClassLoader) {
+        val paramsMapClass = findClass("com.bilibili.bangumi.data.page.detail.BangumiDetailApiService\$UniformSeasonParamsMap", classLoader)
         XposedBridge.hookAllConstructors(paramsMapClass, object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 // Arg2: season id; Arg3: episode id
@@ -28,7 +32,7 @@ class SeasonRelatedHook(classLoader: ClassLoader) : BaseHook(classLoader) {
                 }
             }
         }
-        val videoCardClass = findClass("com.bilibili.bplus.followingcard.api.entity.cardBean.VideoCard", mClassLoader)
+        val videoCardClass = findClass("com.bilibili.bplus.followingcard.api.entity.cardBean.VideoCard", classLoader)
         findAndHookMethod(videoCardClass, "getJumpUrl", urlHook)
         findAndHookMethod(videoCardClass, "getCommentJumpUrl", urlHook)
     }
